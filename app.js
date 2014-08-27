@@ -4,9 +4,8 @@ var express = require('express'),
 	lame = require('lame'),
 	request = require('request');
 
-var app = express();
-
-var clients = [];
+var app = express(),
+	clients = [];
 
 var encoder = lame.Encoder({channels: 2, bitDepth: 16, sampleRate: 44100});
 encoder.on("data", function (data) {
