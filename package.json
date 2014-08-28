@@ -10,7 +10,8 @@
     "mediaserver": "~0.0.4",
     "node-ffprobe": "~1.2.2",
     "request": "~2.39.0",
-    "throttle": "~1.0.3"
+    "throttle": "~1.0.3",
+    "jshint": "~2.5.5"
   },
   "devDependencies": {},
   "scripts": {
