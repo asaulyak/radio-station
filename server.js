@@ -80,4 +80,4 @@ var server = app.listen(config.port, function () {
 
 (function (path) {
 	startStreaming(path);
-})(__dirname + 'public/mockdata/music.mp3');
+})(__dirname + '/public/mockdata/music.mp3');
