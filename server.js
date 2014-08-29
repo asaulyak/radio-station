@@ -2,7 +2,8 @@ var express = require('express'),
 	fs = require('fs'),
 	throttle = require('throttle'),
 	lame = require('lame'),
-	request = require('request');
+	request = require('request'),
+	config = require('./config');
 
 var app = express();
 
@@ -73,10 +74,10 @@ function closeConnections() {
 	});
 }
 
-var server = app.listen(1337, function () {
+var server = app.listen(config.port, function () {
 	console.log('Listening on port %d', server.address().port);
 });
 
 (function (path) {
 	startStreaming(path);
-})('public/mockdata/music.mp3');
+})(__dirname + 'public/mockdata/music.mp3');
