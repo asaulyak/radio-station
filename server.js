@@ -74,7 +74,7 @@ function closeConnections() {
 	});
 }
 
-var server = app.listen(config.port, function () {
+var server = app.listen(config.get('port'), function () {
 	console.log('Listening on port %d', server.address().port);
 });
 
