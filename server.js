@@ -1,83 +1,29 @@
 var express = require('express'),
-	fs = require('fs'),
-	throttle = require('throttle'),
-	lame = require('lame'),
-	request = require('request'),
-	config = require('./config');
+	config = require('./config'),
+	streamer = require('./middleware/streamer');
 
 var app = express();
 
-var clients = [];
-
-var encoder = lame.Encoder({channels: 2, bitDepth: 16, sampleRate: 44100});
-encoder.on("data", function (data) {
-	broadcast(data);
-});
-var decoder = lame.Decoder();
-decoder.on('format', function (format) {
-	console.log('decode data', format);
-	decoder.pipe(encoder);
-});
-
 app.get('/', function (req, res) {
 	console.log('Client connected');
-
-	req.on('end', function () {
-		console.log('request ended');
-		clients.splice(clients.indexOf(res), 1);
-	});
-
-	res.on('end', function () {
-		console.log('response ended');
-		clients.splice(clients.indexOf(res), 1);
-	});
 
 	res.writeHead(200, {
 		'Content-Type': 'audio/mpeg'
 	});
 
-	clients.push(res);
+	streamer.registerClient(res);
+
+	streamer.on('end', function () {
+		console.log('on end');
+	});
 });
 
-function startStreaming(path) {
-	console.log('Start streaming');
-	var t = new throttle(320 * 1024 / 4);
-	var stream = getLocalFileStream(path);
-	var unthrottle = stream.pipe(t);
-	unthrottle.on('data', function (data) {
-		broadcast(data);
-	});
-
-	unthrottle.on('end', function () {
-		console.log('Stream ended');
-		clients = [];
-	});
-}
-
-function getRemoteFileStream(url) {
-	return request(url);
-}
-
-function getLocalFileStream(path) {
-	return fs.createReadStream(path)
-}
-
-function broadcast(data) {
-	clients.forEach(function (client) {
-		client.write(data);
-	});
-}
-
-function closeConnections() {
-	clients.forEach(function (client) {
-		client.end();
-	});
-}
+app.get('/add', function (req, res) {
+	console.log('Add audio to stream');
+	streamer.play('https://psv4.vk.me/c521404/u59066720/audios/42735ac8b36e.mp3?extra=WfOioggRDOsCYk6vU-8JEQAMbV4K4FL4vCLFAek4y5jF5n1t2BtXxsZk1vsqU5iLaPZmLYSIftvKahYL6NKCQc0OYjx2WwhKtQ,232');
+	res.end();
+});
 
 var server = app.listen(config.get('port'), function () {
 	console.log('Listening on port %d', server.address().port);
 });
-
-(function (path) {
-	startStreaming(path);
-})(__dirname + '/public/mockdata/music.mp3');

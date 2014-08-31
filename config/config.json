@@ -1,3 +1,6 @@
 {
-	"port": 1337
+	"port": 1337,
+	"streaming": {
+		"bitRate": 40960
+	}
 }
