@@ -33,9 +33,15 @@ streamer.broadcast = function (data) {
 	});
 };
 
-//--------------------------------------
 streamer.registerClient = function (client) {
 	clients.push(client);
+	client.on('closed', function () {
+		var position = clients.indexOf(client);
+		if(position !== -1) {
+			console.log('Remove client from clients list');
+			clients.splice(position, 1);
+		}
+	});
 };
 
 streamer.play = function (url) {
