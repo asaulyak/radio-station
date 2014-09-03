@@ -13,8 +13,7 @@
     "node-ffprobe": "~1.2.2",
     "path": "^0.4.9",
     "request": "~2.39.0",
-    "throttle": "~1.0.3",
-    "throttled-stream": "0.0.1"
+    "throttle": "~1.0.3"
   },
   "devDependencies": {},
   "scripts": {

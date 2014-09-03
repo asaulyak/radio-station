@@ -20,6 +20,10 @@ var Channel = function () {
 		console.log('start channel');
 		this.streamer.play('https://psv4.vk.me/c5861/u171788897/audios/0241b9fcaf11.mp3?extra=wCtc3yOyXRpVKg6AFyesR119FLSygFvg7BmKpXx0ypO37MUEkClbXhuIPIsw9X8GC0kZX-Mig6tzOpKqBdGi7xlITiVnqLE,276');
 	};
+
+	this.stop = function () {
+		this.streamer.stop();
+	};
 };
 
 module.exports = Channel;
