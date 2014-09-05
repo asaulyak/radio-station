@@ -13,7 +13,8 @@
     "node-ffprobe": "~1.2.2",
     "path": "^0.4.9",
     "request": "~2.39.0",
-    "throttle": "~1.0.3"
+    "throttle": "~1.0.3",
+    "vkontakte": "^0.3.0"
   },
   "devDependencies": {},
   "scripts": {
