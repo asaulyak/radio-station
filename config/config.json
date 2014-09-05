@@ -2,5 +2,9 @@
 	"port": 1337,
 	"streaming": {
 		"bitRate": 40960
+	},
+	"vk": {
+		"access_token": "8886be098a99ff3969673e48428ed6267a1b3ff4605e0ddfb5fc7894ca7b0bf3c43f9bed68e1b43d9eaa5",
+		"searchUrl": "https://api.vk.com/method/audio.search.json?access_token={access_token}&q={query}"
 	}
 }

@@ -1,11 +1,12 @@
 var express = require('express'),
 	config = require('./config'),
-	Channel = require('./middleware/Channel');
+	Channel = require('./middleware/channel'),
+	vk = require('./middleware/vk');
 
 var app = express(),
 	channels = {};
 
-app.get('/channel/play/:name', function (req, res) {
+app.get('/api/channel/play/:name', function (req, res) {
 	console.log('play channel', req.params.name, channels[req.params.name]);
 	res.writeHead(200, {
 		'Content-Type': 'audio/mpeg'
@@ -16,7 +17,7 @@ app.get('/channel/play/:name', function (req, res) {
 	}
 });
 
-app.get('/channel/create/:name', function (req, res) {
+app.get('/api/channel/create/:name', function (req, res) {
 	console.log('/channel/create/');
 	var channel = new Channel();
 	channels[req.params.name] = channel;
@@ -26,17 +27,22 @@ app.get('/channel/create/:name', function (req, res) {
 	res.end();
 });
 
-app.get('/channel/remove/:name', function (req, res) {
+app.get('/api/channel/remove/:name', function (req, res) {
 	console.log(req.params);
 	channels[req.params.name].stop();
 	res.end();
 });
 
-app.get('/', function (req, res) {
-	console.log('Client connected');
+app.get('/api/search/:query', function (req, res) {
+	vk.searchMusic(req.params.query, function (err, data) {
+		if(err) {
+			res.json(err);
+			res.end();
+			return;
+		}
 
-	res.writeHead(200, {
-		'Content-Type': 'audio/mpeg'
+		res.json(data);
+		res.end();
 	});
 });
 
