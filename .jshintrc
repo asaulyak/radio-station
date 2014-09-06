@@ -17,11 +17,7 @@
 
 	"undef": true,
 	"unused": true,
-	"strict": true,
-	"maxdepth": false,
-	"maxstatements": false,
-	"maxcomplexity": false,
-	"maxlen": false,
+	"strict": false,
 
 
 	"asi": false,
@@ -31,36 +27,5 @@
 	"esnext": false,
 	"moz": false,
 
-	"evil": false,
-	"expr": false,
-	"funcscope": false,
-	"globalstrict": false,
-	"iterator": false,
-	"lastsemic": false,
-	"laxbreak": false,
-	"laxcomma": false,
-	"loopfunc": false,
-	"multistr": false,
-	"proto": false,
-	"scripturl": false,
-	"shadow": false,
-	"sub": false,
-	"supernew": false,
-	"validthis": false,
-
-	"browser": true,
-	"couch": false,
-	"devel": true,
-	"dojo": false,
-	"jquery": false,
-	"mootools": false,
-	"node": false,
-	"nonstandard": false,
-	"prototypejs": false,
-	"rhino": false,
-	"worker": false,
-	"wsh": false,
-	"yui": false,
-
-	"globals": {}
+	"jquery": false
 }
