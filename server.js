@@ -1,7 +1,8 @@
 var express = require('express'),
 	config = require('./config'),
 	Channel = require('./middleware/channel'),
-	vk = require('./middleware/vk');
+	async = require('async'),
+	mediaSources = require('./middleware/mediaSources');
 
 var app = express(),
 	channels = {};
@@ -12,7 +13,7 @@ app.get('/api/channel/play/:name', function (req, res) {
 		'Content-Type': 'audio/mpeg'
 	});
 	var channel = channels[req.params.name];
-	if(channel) {
+	if (channel) {
 		channel.join(res);
 	}
 });
@@ -34,16 +35,27 @@ app.get('/api/channel/remove/:name', function (req, res) {
 });
 
 app.get('/api/search/:query', function (req, res) {
-	vk.searchMusic(req.params.query, function (err, data) {
-		if(err) {
-			res.json(err);
-			res.end();
-			return;
-		}
 
-		res.json(data);
-		res.end();
+	// Create array of tasks to be ran for each media source
+	var sources = mediaSources.map(function (source) {
+		return function (callback) {
+			source.searchMusic(encodeURIComponent(req.params.query), callback);
+		}
 	});
+
+	// Run music search in parallel
+	async.parallel(sources,
+		function (err, results) {
+			if (err) {
+				res.json(err);
+				res.end();
+				return;
+			}
+
+			// Merge arrays of results and return those as JSON
+			res.json([].concat.apply([], results));
+			res.end();
+		});
 });
 
 var server = app.listen(config.get('port'), function () {

@@ -60,7 +60,6 @@ var Streamer = function () {
 		}.bind(this));
 
 		stream.on('end', function () {
-			console.log('Stream ended', this);
 			this.emit('end');
 		}.bind(this));
 	};
