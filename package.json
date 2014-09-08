@@ -13,6 +13,7 @@
     "mediaserver": "~0.0.4",
     "nconf": "^0.6.9",
     "node-ffprobe": "~1.2.2",
+    "oauth2-server": "^2.2.2",
     "path": "^0.4.9",
     "request": "~2.39.0",
     "throttle": "~1.0.3"
