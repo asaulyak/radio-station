@@ -23,7 +23,7 @@ app.get('/api/channel/play/:uid', function (req, res) {
 	}
 });
 
-app.get('/api/channel/create/:name', function (req, res) {
+app.put('/api/channel/create/:name', function (req, res) {
 	console.log('/channel/create/');
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
@@ -32,7 +32,7 @@ app.get('/api/channel/create/:name', function (req, res) {
 	res.end();
 });
 
-app.get('/api/channel/remove/:uid', function (req, res) {
+app.delete('/api/channel/remove/:uid', function (req, res) {
 	var uid = req.params.uid,
 		channel = channels[uid];
 	if(channel) {
