@@ -3,7 +3,7 @@ var Streamer = require('./streamer');
 
 
 var Channel = function () {
-	if(!(this instanceof Channel)) {
+	if (!(this instanceof Channel)) {
 		return new Channel();
 	}
 
@@ -17,7 +17,17 @@ var Channel = function () {
 
 	this.start = function () {
 		console.log('start channel', this._tracks);
-		this.streamer.play(this._tracks.pop().url);
+		this.pushTrackToStream();
+		this.streamer.on('end', this.pushTrackToStream.bind(this));
+	};
+
+	this.pushTrackToStream = function () {
+		var track = this._tracks.shift();
+
+		if (track) {
+			console.log('Push track to stream', track);
+			this.streamer.play(track.url);
+		}
 	};
 
 	this.stop = function () {

@@ -11,7 +11,7 @@ var app = express(),
 
 app.use(bodyParser.json());
 
-app.get('/api/channel/play/:uid', function (req, res) {
+app.get('/api/channel/join/:uid', function (req, res) {
 	var uid = req.params.uid;
 	console.log('play channel', uid, channels[uid]);
 	res.writeHead(200, {
@@ -28,17 +28,38 @@ app.put('/api/channel/create/:name', function (req, res) {
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
 
-	res.write('Channel ' + uid + ' has been created.');
+	res.json({uid: uid});
 	res.end();
 });
 
 app.delete('/api/channel/remove/:uid', function (req, res) {
 	var uid = req.params.uid,
 		channel = channels[uid];
-	if(channel) {
+	if (channel) {
 		channel.stop();
 		channel = null;
-		res.write('Channel ' + uid + ' has been removed.');
+		res.json({uid: uid});
+	}
+	else {
+		res.json({
+			error: 'Channel does not exist.'
+		});
+	}
+
+	res.end();
+});
+
+app.post('/api/channel/start/:uid', function (req, res) {
+	var uid = req.params.uid,
+		channel = channels[uid];
+	if (channel) {
+		channel.start();
+		res.json({uid: uid});
+	}
+	else {
+		res.json({
+			error: 'Channel does not exist.'
+		});
 	}
 
 	res.end();
@@ -51,9 +72,8 @@ app.put('/api/channel/:uid/addtrack/', function (req, res) {
 		var engine = mediaSources.getEngine(req.body.engine);
 
 		engine.getTrack(req.body.id, function (err, track) {
-			if(!err) {
+			if (!err) {
 				channel.addTrack(track);
-				channel.start();
 			}
 		});
 	}
