@@ -11,7 +11,7 @@ var app = express(),
 
 app.use(bodyParser.json());
 
-app.get('/api/channel/join/:uid', function (req, res) {
+app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
 	console.log('play channel', uid, channels[uid]);
 	res.writeHead(200, {
