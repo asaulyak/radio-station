@@ -2,49 +2,96 @@ var express = require('express'),
 	config = require('./config'),
 	Channel = require('./middleware/channel'),
 	async = require('async'),
-	mediaSources = require('./middleware/mediaSources');
+	mediaSources = require('./middleware/mediaSources'),
+	bodyParser = require('body-parser'),
+	guid = require('./middleware/guid');
 
 var app = express(),
 	channels = {};
 
-app.get('/api/channel/play/:name', function (req, res) {
-	console.log('play channel', req.params.name, channels[req.params.name]);
+app.use(bodyParser.json());
+
+app.get('/api/channel/listen/:uid', function (req, res) {
+	var uid = req.params.uid;
+	console.log('play channel', uid, channels[uid]);
 	res.writeHead(200, {
 		'Content-Type': 'audio/mpeg'
 	});
-	var channel = channels[req.params.name];
+	var channel = channels[uid];
 	if (channel) {
 		channel.join(res);
 	}
 });
 
-app.get('/api/channel/create/:name', function (req, res) {
+app.put('/api/channel/create/:name', function (req, res) {
 	console.log('/channel/create/');
-	var channel = new Channel();
-	channels[req.params.name] = channel;
-	channel.start();
+	var uid = guid();
+	channels[uid] = new Channel(req.params.name);
 
-	res.write('Channel ' + req.params.name + ' has been added.');
+	res.json({uid: uid});
 	res.end();
 });
 
-app.get('/api/channel/remove/:name', function (req, res) {
-	console.log(req.params);
-	channels[req.params.name].stop();
+app.delete('/api/channel/remove/:uid', function (req, res) {
+	var uid = req.params.uid,
+		channel = channels[uid];
+	if (channel) {
+		channel.stop();
+		channel = null;
+		res.json({uid: uid});
+	}
+	else {
+		res.json({
+			error: 'Channel does not exist.'
+		});
+	}
+
+	res.end();
+});
+
+app.post('/api/channel/start/:uid', function (req, res) {
+	var uid = req.params.uid,
+		channel = channels[uid];
+	if (channel) {
+		channel.start();
+		res.json({uid: uid});
+	}
+	else {
+		res.json({
+			error: 'Channel does not exist.'
+		});
+	}
+
+	res.end();
+});
+
+app.put('/api/channel/:uid/addtrack/', function (req, res) {
+	console.log('uid', req.params.uid, req.body);
+	var channel = channels[req.params.uid];
+	if (channel) {
+		var engine = mediaSources.getEngine(req.body.engine);
+
+		engine.getTrack(req.body.id, function (err, track) {
+			if (!err) {
+				channel.addTrack(track);
+			}
+		});
+	}
+
 	res.end();
 });
 
 app.get('/api/search/:query', function (req, res) {
 
 	// Create array of tasks to be ran for each media source
-	var sources = mediaSources.map(function (source) {
+	var tasks = mediaSources.getEngines().map(function (source) {
 		return function (callback) {
 			source.searchMusic(encodeURIComponent(req.params.query), callback);
 		}
 	});
 
 	// Run music search in parallel
-	async.parallel(sources,
+	async.parallel(tasks,
 		function (err, results) {
 			if (err) {
 				res.json(err);
