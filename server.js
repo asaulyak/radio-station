@@ -105,6 +105,8 @@ app.get('/api/search/:query', function (req, res) {
 		});
 });
 
-var server = app.listen(config.get('port'), function () {
+app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
+
+var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'), function () {
 	console.log('Listening on port %d', server.address().port);
 });
