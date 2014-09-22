@@ -46,7 +46,14 @@ var vk = {
 				callback(err);
 				return;
 			}
-			data = JSON.parse(data.request.response.body).response;
+			data = JSON.parse(data.request.response.body).response[0];
+			if(!data) {
+				callback({
+					error: 'Could not get track information'
+				});
+				return;
+			}
+
 			callback(null, {
 				url: data.url,
 				title: data.artist + ' ' + data.title,
@@ -74,6 +81,13 @@ var sc = {
 			}
 
 			data = JSON.parse(data.request.response.body);
+
+			if(!data) {
+				callback({
+					error: 'Could not get track information'
+				});
+				return;
+			}
 
 			callback(null, data
 				.filter(function (element) {

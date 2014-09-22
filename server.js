@@ -13,8 +13,8 @@ app.use(bodyParser.json());
 
 app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
-	console.log('play channel', uid, channels[uid]);
-	res.writeHead(200, {
+	console.log('play channel', uid);
+	res.writeHead(206, {
 		'Content-Type': 'audio/mpeg'
 	});
 	var channel = channels[uid];
@@ -105,8 +105,17 @@ app.get('/api/search/:query', function (req, res) {
 		});
 });
 
-app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
-
-var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'), function () {
-	console.log('Listening on port %d', server.address().port);
+app.get('/test', function (req, res) {
+	setTimeout(3000, function () {
+		console.log('closed');
+		res.end();
+	});
+	console.log('connected');
 });
+
+var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
+						process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
+						function () {
+							console.log('Listening on port %d', server.address().port);
+						}
+);

@@ -30,6 +30,7 @@ var Streamer = function () {
 
 	this.registerClient = function (client) {
 		this._clients.push(client);
+		console.log('add client', this._clients.length);
 		client.on('closed', function () {
 			var position = this._clients.indexOf(client);
 			if(position !== -1) {
@@ -44,6 +45,10 @@ var Streamer = function () {
 	};
 
 	this.stop = function () {
+		console.log('stop streaming');
+		this._clients.forEach(function (client) {
+			client.end();
+		});
 		this._clients = [];
 	};
 

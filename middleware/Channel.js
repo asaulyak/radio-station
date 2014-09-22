@@ -28,6 +28,9 @@ var Channel = function () {
 			console.log('Push track to stream', track);
 			this.streamer.play(track.url);
 		}
+		else {
+			this.streamer.stop();
+		}
 	};
 
 	this.stop = function () {
