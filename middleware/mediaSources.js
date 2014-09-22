@@ -46,7 +46,10 @@ var vk = {
 				callback(err);
 				return;
 			}
-			data = JSON.parse(data.request.response.body).response[0];
+			data = JSON.parse(data.request.response.body).response;
+			if(Array.isArray(data)) {
+				data = data[0];
+			}
 			if(!data) {
 				callback({
 					error: 'Could not get track information'
