@@ -17,11 +17,11 @@ var Channel = function () {
 
 	this.start = function () {
 		console.log('start channel', this._tracks);
-		this.pushTrackToStream();
-		this.streamer.on('end', this.pushTrackToStream.bind(this));
+		this.pushNextTrackToStream();
+		this.streamer.on('end', this.pushNextTrackToStream.bind(this));
 	};
 
-	this.pushTrackToStream = function () {
+	this.pushNextTrackToStream = function () {
 		var track = null;
 		while(!track
 			&& this._tracks.length) {
