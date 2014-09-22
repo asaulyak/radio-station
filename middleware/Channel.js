@@ -22,7 +22,11 @@ var Channel = function () {
 	};
 
 	this.pushTrackToStream = function () {
-		var track = this._tracks.shift();
+		var track = null;
+		while(!track
+			&& this._tracks.length) {
+			track = this._tracks.shift();
+		}		
 
 		if (track) {
 			console.log('Push track to stream', track);
