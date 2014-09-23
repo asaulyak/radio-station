@@ -123,7 +123,7 @@ var sc = {
 			data = JSON.parse(data.request.response.body);
 			
 			if(!data
-				|| !data.url) {
+				|| !data.stream_url) {
 				
 				callback({
 					error: 'Could not get track information'
