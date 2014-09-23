@@ -50,7 +50,8 @@ var vk = {
 			if(Array.isArray(data)) {
 				data = data[0];
 			}
-			if(!data) {
+			if(!data
+				|| !data.url) {
 				callback({
 					error: 'Could not get track information'
 				});
@@ -85,7 +86,8 @@ var sc = {
 
 			data = JSON.parse(data.request.response.body);
 
-			if(!data) {
+			if(!data
+				|| !data.url) {
 				callback({
 					error: 'Could not get track information'
 				});
