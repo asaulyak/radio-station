@@ -86,8 +86,7 @@ var sc = {
 
 			data = JSON.parse(data.request.response.body);
 
-			if(!data
-				|| !data.url) {
+			if(!data) {
 				callback({
 					error: 'Could not get track information'
 				});
@@ -122,6 +121,15 @@ var sc = {
 			}
 
 			data = JSON.parse(data.request.response.body);
+			
+			if(!data
+				|| !data.url) {
+				
+				callback({
+					error: 'Could not get track information'
+				});
+				return;
+			}
 
 			callback(null, {
 				url: data.stream_url + '?client_id=' + config.get('sc:client_id'),
