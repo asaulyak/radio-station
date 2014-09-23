@@ -74,11 +74,17 @@ app.put('/api/channel/:uid/addtrack/', function (req, res) {
 		engine.getTrack(req.body.id, function (err, track) {
 			if (!err) {
 				channel.addTrack(track);
+				res.write(track.url);
 			}
+			else {
+				res.write(err);	
+			}
+					
+			res.end();
 		});
 	}
 
-	res.end();
+	
 });
 
 app.get('/api/search/:query', function (req, res) {
