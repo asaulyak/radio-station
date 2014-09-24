@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
 	console.log('play channel', uid);
-	res.writeHead(206, {
+	res.writeHead(200, {
 		'Content-Type': 'audio/mpeg'
 	});
 	var channel = channels[uid];
