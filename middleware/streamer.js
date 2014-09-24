@@ -45,7 +45,7 @@ var Streamer = function () {
 	};
 
 	this.stop = function () {
-		console.log('stop streaming');
+		console.log('Stop streaming');
 		this._clients.forEach(function (client) {
 			client.end();
 		});
@@ -65,6 +65,7 @@ var Streamer = function () {
 		}.bind(this));
 
 		stream.on('end', function () {
+			console.log('Stop streaming track');
 			this.emit('end');
 		}.bind(this));
 	};
