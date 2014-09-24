@@ -1,6 +1,7 @@
 //Exports
 var request = require('request'),
-	config = require('../config/index');
+	config = require('../config/index'),
+	logger = require('./logger');
 
 var vk = {
 	searchMusic: function (query, callback) {
@@ -9,7 +10,7 @@ var vk = {
 			.replace('{access_token}', config.get('vk:access_token'))
 			.replace('{query}', query);
 
-		console.log('searchUrl', searchUrl);
+		logger.debug('searchUrl', searchUrl);
 
 		request(searchUrl, function (err, data) {
 			if (err) {
@@ -76,7 +77,7 @@ var sc = {
 				.replace('{client_id}', config.get('sc:client_id'))
 				.replace('{query}', query);
 
-		console.log('searchUrl', searchUrl);
+		logger.debug('searchUrl', searchUrl);
 
 		request(searchUrl, function (err, data) {
 			if (err) {

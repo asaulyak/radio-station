@@ -1,5 +1,6 @@
 //Exports
-var Streamer = require('./streamer');
+var Streamer = require('./streamer'),
+	logger = require('./logger');
 
 
 var Channel = function () {
@@ -16,34 +17,29 @@ var Channel = function () {
 			client.end();
 			return;
 		}
-		console.log('New client connected');
+		logger.debug('New client connected');
 		this.streamer.registerClient(client);
 	};
 
 	this.start = function () {
-		console.log('Start channel', this._tracks);
+		logger.debug('Start channel', this._tracks);
 		this._isStarted = true;
 		this.pushNextTrackToStream();
 		this.streamer.on('end', this.pushNextTrackToStream.bind(this));
 	};
 
 	this.pushNextTrackToStream = function () {
-		var track = null;
-		console.log('Tracks in queue:', this._tracks.length);
-		while(!track
-			&& this._tracks.length) {
-			track = this._tracks.shift();
-		}		
+		var track = this._tracks.shift();
+		logger.debug('Tracks in queue:', this._tracks.length);
 
 		if (track) {
-			console.log('Push track to stream', track);
+			logger.debug('Push track to stream', track);
 			this.streamer.play(track.url);
 		}
-		// Uncomment when runtime audio bit rate detecting is supported
-		// else {
-			// this._isStarted = false;
-			// this.streamer.stop();
-		// }
+		else {
+			this._isStarted = false;
+			this.streamer.stop();
+		}
 	};
 
 	this.stop = function () {
@@ -52,7 +48,7 @@ var Channel = function () {
 	};
 
 	this.addTrack = function (track) {
-		console.log('Add new track', track);
+		logger.debug('Add new track', track);
 		this._tracks.push(track);
 	}
 };

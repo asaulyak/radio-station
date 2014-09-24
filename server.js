@@ -4,7 +4,8 @@ var express = require('express'),
 	async = require('async'),
 	mediaSources = require('./middleware/mediaSources'),
 	bodyParser = require('body-parser'),
-	guid = require('./middleware/guid');
+	guid = require('./middleware/guid')
+	logger = require('./middleware/logger');
 
 var app = express(),
 	channels = {};
@@ -13,7 +14,7 @@ app.use(bodyParser.json());
 
 app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
-	console.log('play channel', uid);
+	logger.debug('play channel', uid);
 	res.writeHead(200, {
 		'Content-Type': 'audio/mpeg'
 	});
@@ -24,7 +25,7 @@ app.get('/api/channel/listen/:uid', function (req, res) {
 });
 
 app.put('/api/channel/create/:name', function (req, res) {
-	console.log('/channel/create/');
+	logger.debug('/channel/create/');
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
 
@@ -66,7 +67,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 });
 
 app.put('/api/channel/:uid/addtrack/', function (req, res) {
-	console.log('uid', req.params.uid, req.body);
+	logger.debug('uid', req.params.uid, req.body);
 	var channel = channels[req.params.uid];
 	if (channel) {
 		var engine = mediaSources.getEngine(req.body.engine);
@@ -113,15 +114,15 @@ app.get('/api/search/:query', function (req, res) {
 
 app.get('/test', function (req, res) {
 	setTimeout(3000, function () {
-		console.log('closed');
+		logger.debug('closed');
 		res.end();
 	});
-	console.log('connected');
+	logger.debug('connected');
 });
 
 var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
 						process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
 						function () {
-							console.log('Listening on port %d', server.address().port);
+							logger.debug('Listening on port %d', server.address().port);
 						}
 );

@@ -4,7 +4,8 @@ var fs = require('fs'),
 	Throttle = require('throttle'),
 	EventEmitter = require('events').EventEmitter,
 	config = require('../config'),
-	util = require('util');
+	util = require('util'),
+	logger = require('./logger');
 
 
 var Streamer = function () {
@@ -30,11 +31,12 @@ var Streamer = function () {
 
 	this.registerClient = function (client) {
 		this._clients.push(client);
-		console.log('add client', this._clients.length);
+		logger.debug('add client', this._clients.length);
 		client.on('closed', function () {
+			logger.debug('Client disconnected');
 			var position = this._clients.indexOf(client);
 			if(position !== -1) {
-				console.log('Remove client from clients list');
+				logger.debug('Remove client from clients list');
 				this._clients.splice(position, 1);
 			}
 		}.bind(this));
@@ -45,7 +47,7 @@ var Streamer = function () {
 	};
 
 	this.stop = function () {
-		console.log('Stop streaming');
+		logger.debug('Stop streaming');
 		this._clients.forEach(function (client) {
 			client.end();
 		});
@@ -53,10 +55,10 @@ var Streamer = function () {
 	};
 
 	this.play = function (url) {
-		console.log('play');
+		logger.debug('Play track', url);
 		var stream = this.getRemoteFileStream(url);
 
-		console.log('Start streaming');
+		logger.debug('Start streaming');
 
 		stream = stream.pipe(new Throttle(config.get('streaming:bitRate')));
 
@@ -65,7 +67,7 @@ var Streamer = function () {
 		}.bind(this));
 
 		stream.on('end', function () {
-			console.log('Stop streaming track');
+			logger.debug('Stop streaming track');
 			this.emit('end');
 		}.bind(this));
 	};
