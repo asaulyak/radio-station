@@ -56,7 +56,15 @@ var Streamer = function () {
 
 	this.play = function (url) {
 		logger.debug('Play track', url);
-		var stream = this.getRemoteFileStream(url);
+		var stream = null;
+		try {
+			stream = this.getRemoteFileStream(url);
+		}
+		catch(e) {
+			logger.error('Can\'t open url', url);
+			this.emit('end');
+			return;
+		}
 
 		logger.debug('Start streaming');
 
