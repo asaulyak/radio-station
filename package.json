@@ -16,7 +16,8 @@
     "node-gyp": "^1.0.2",
     "path": "^0.4.9",
     "request": "~2.39.0",
-    "throttle": "~1.0.3"
+    "throttle": "~1.0.3",
+    "winston": "^0.8.0"
   },
   "devDependencies": {},
   "scripts": {
