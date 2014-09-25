@@ -15,12 +15,17 @@ app.use(bodyParser.json());
 app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
 	logger.debug('play channel', uid);
-	res.writeHead(200, {
-		'Content-Type': 'audio/mpeg'
-	});
+	
 	var channel = channels[uid];
 	if (channel) {
+		res.writeHead(200, {
+			'Content-Type': 'audio/mpeg'
+		});
 		channel.join(res);
+	}
+	else {
+		res.status(404);
+		res.end();
 	}
 });
 
