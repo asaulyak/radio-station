@@ -3,16 +3,21 @@
 	"streaming": {
 		"bitRate": 40960
 	},
-	"vk": {
-		"baseUrl": "https://api.vk.com/method/",
-		"access_token": "8886be098a99ff3969673e48428ed6267a1b3ff4605e0ddfb5fc7894ca7b0bf3c43f9bed68e1b43d9eaa5",
-		"searchUrl": "audio.search.json?access_token={access_token}&q={query}",
-		"trackUrl": "audio.getById.json?audios={trackId}&access_token={access_token}"
+	"logging": {
+		"level": "debug"
 	},
-	"sc": {
-		"baseUrl": "https://api.soundcloud.com/tracks/",
-		"client_id": "8613a4b6d4034312df391b915efba3a4",
-		"searchUrl": "?q={query}&client_id={client_id}&format=json&_status_code_map[302]=200",
-		"trackUrl": "{track_id}.json?client_id={client_id}"
+	"mediaSources": {
+		"vk": {
+			"baseUrl": "https://api.vk.com/method/",
+			"access_token": "8886be098a99ff3969673e48428ed6267a1b3ff4605e0ddfb5fc7894ca7b0bf3c43f9bed68e1b43d9eaa5",
+			"searchUrl": "audio.search.json?access_token={access_token}&q={query}",
+			"trackUrl": "audio.getById.json?audios={trackId}&access_token={access_token}"
+		},
+		"sc": {
+			"baseUrl": "https://api.soundcloud.com/tracks/",
+			"client_id": "8613a4b6d4034312df391b915efba3a4",
+			"searchUrl": "?q={query}&client_id={client_id}&format=json&_status_code_map[302]=200",
+			"trackUrl": "{track_id}.json?client_id={client_id}"
+		}
 	}
 }
