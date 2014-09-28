@@ -71,7 +71,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 	res.end();
 });
 
-app.put('/api/channel/:uid/addtrack/', function (req, res) {
+app.put('/api/channel/addtrack/:uid', function (req, res) {
 	logger.debug('uid', req.params.uid, req.body);
 	var channel = channels[req.params.uid];
 	if (channel) {
