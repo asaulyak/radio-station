@@ -34,7 +34,7 @@ var Channel = function () {
 
 		if (track) {
 			logger.debug('Push track to stream', track);
-			this.streamer.play(track.url);
+			this.streamer.play(track);
 		}
 		else {
 			this._isStarted = false;

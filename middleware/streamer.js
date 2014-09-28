@@ -54,21 +54,21 @@ var Streamer = function () {
 		this._clients = [];
 	};
 
-	this.play = function (url) {
-		logger.debug('Play track', url);
+	this.play = function (track) {
+		logger.debug('Play track', track.url);
 		var stream = null;
 		try {
-			stream = this.getRemoteFileStream(url);
+			stream = this.getRemoteFileStream(track.url);
 		}
 		catch(e) {
-			logger.error('Can\'t open url', url);
+			logger.error('Can\'t open url', track.url);
 			this.emit('end');
 			return;
 		}
 
 		logger.debug('Start streaming');
 
-		stream = stream.pipe(new Throttle(config.get('streaming:bitRate')));
+		stream = stream.pipe(new Throttle(track.bitRate));
 
 		stream.on('data', function (data) {
 			this.broadcast(data);

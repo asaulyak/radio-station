@@ -118,11 +118,18 @@ app.get('/api/search/:query', function (req, res) {
 });
 
 app.get('/test', function (req, res) {
-	setTimeout(3000, function () {
-		logger.debug('closed');
+	var request = require('request');
+
+	request({
+		method: 'head',
+		uri: 'https://psv4.vk.me/c4402/u48022545/audios/40464e4c543a.mp3?extra=3ezpVj1-PbY2x4TvgGkbgDXl6CZBBs5WS0zeCLDe_v6wRhVQKKfydgXhWjJkCVqN94yzQudss0qW79TgSYnQg3NnGnWjdw'
+	}, function (error, data) {
+//		console.log('body', JSON.parse(data.request.response.body));
+//		logger.debug(data);
+		res.json(data.headers);
+		console.log(data.headers);
 		res.end();
 	});
-	logger.debug('connected');
 });
 
 var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
