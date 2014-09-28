@@ -4,7 +4,8 @@ var express = require('express'),
 	async = require('async'),
 	mediaSources = require('./middleware/mediaSources'),
 	bodyParser = require('body-parser'),
-	guid = require('./middleware/guid');
+	guid = require('./middleware/guid')
+	logger = require('./middleware/logger');
 
 var app = express(),
 	channels = {};
@@ -13,18 +14,23 @@ app.use(bodyParser.json());
 
 app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
-	console.log('play channel', uid, channels[uid]);
-	res.writeHead(200, {
-		'Content-Type': 'audio/mpeg'
-	});
+	logger.debug('play channel', uid);
+	
 	var channel = channels[uid];
 	if (channel) {
+		res.writeHead(200, {
+			'Content-Type': 'audio/mpeg'
+		});
 		channel.join(res);
+	}
+	else {
+		res.status(404);
+		res.end();
 	}
 });
 
 app.put('/api/channel/create/:name', function (req, res) {
-	console.log('/channel/create/');
+	logger.debug('/channel/create/');
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
 
@@ -66,7 +72,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 });
 
 app.put('/api/channel/:uid/addtrack/', function (req, res) {
-	console.log('uid', req.params.uid, req.body);
+	logger.debug('uid', req.params.uid, req.body);
 	var channel = channels[req.params.uid];
 	if (channel) {
 		var engine = mediaSources.getEngine(req.body.engine);
@@ -74,11 +80,17 @@ app.put('/api/channel/:uid/addtrack/', function (req, res) {
 		engine.getTrack(req.body.id, function (err, track) {
 			if (!err) {
 				channel.addTrack(track);
+				res.write(track.url);
 			}
+			else {
+				res.write(err);	
+			}
+					
+			res.end();
 		});
 	}
 
-	res.end();
+	
 });
 
 app.get('/api/search/:query', function (req, res) {
@@ -105,6 +117,24 @@ app.get('/api/search/:query', function (req, res) {
 		});
 });
 
-var server = app.listen(config.get('port'), function () {
-	console.log('Listening on port %d', server.address().port);
+app.get('/test', function (req, res) {
+	var request = require('request');
+
+	request({
+		method: 'head',
+		uri: 'https://psv4.vk.me/c4402/u48022545/audios/40464e4c543a.mp3?extra=3ezpVj1-PbY2x4TvgGkbgDXl6CZBBs5WS0zeCLDe_v6wRhVQKKfydgXhWjJkCVqN94yzQudss0qW79TgSYnQg3NnGnWjdw'
+	}, function (error, data) {
+//		console.log('body', JSON.parse(data.request.response.body));
+//		logger.debug(data);
+		res.json(data.headers);
+		console.log(data.headers);
+		res.end();
+	});
 });
+
+var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
+						process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
+						function () {
+							logger.debug('Listening on port %d', server.address().port);
+						}
+);

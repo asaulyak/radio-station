@@ -4,7 +4,8 @@ var fs = require('fs'),
 	Throttle = require('throttle'),
 	EventEmitter = require('events').EventEmitter,
 	config = require('../config'),
-	util = require('util');
+	util = require('util'),
+	logger = require('./logger');
 
 
 var Streamer = function () {
@@ -30,10 +31,12 @@ var Streamer = function () {
 
 	this.registerClient = function (client) {
 		this._clients.push(client);
+		logger.debug('add client', this._clients.length);
 		client.on('closed', function () {
+			logger.debug('Client disconnected');
 			var position = this._clients.indexOf(client);
 			if(position !== -1) {
-				console.log('Remove client from clients list');
+				logger.debug('Remove client from clients list');
 				this._clients.splice(position, 1);
 			}
 		}.bind(this));
@@ -44,22 +47,35 @@ var Streamer = function () {
 	};
 
 	this.stop = function () {
+		logger.debug('Stop streaming');
+		this._clients.forEach(function (client) {
+			client.end();
+		});
 		this._clients = [];
 	};
 
-	this.play = function (url) {
-		console.log('play');
-		var stream = this.getRemoteFileStream(url);
+	this.play = function (track) {
+		logger.debug('Play track', track.url);
+		var stream = null;
+		try {
+			stream = this.getRemoteFileStream(track.url);
+		}
+		catch(e) {
+			logger.error('Can\'t open url', track.url);
+			this.emit('end');
+			return;
+		}
 
-		console.log('Start streaming');
+		logger.debug('Start streaming');
 
-		stream = stream.pipe(new Throttle(config.get('streaming:bitRate')));
+		stream = stream.pipe(new Throttle(track.bitRate));
 
 		stream.on('data', function (data) {
 			this.broadcast(data);
 		}.bind(this));
 
 		stream.on('end', function () {
+			logger.debug('Stop streaming track');
 			this.emit('end');
 		}.bind(this));
 	};
