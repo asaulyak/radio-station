@@ -1,8 +1,8 @@
 var express = require('express'),
 	config = require('./config'),
-	Channel = require('./middleware/channel'),
+	Channel = require('./lib/channel'),
 	async = require('async'),
-	mediaSources = require('./middleware/mediaSources'),
+	mediaSources = require('./lib/mediaSources'),
 	bodyParser = require('body-parser'),
 	guid = require('./middleware/guid')
 	logger = require('./middleware/logger');
@@ -117,24 +117,9 @@ app.get('/api/search/:query', function (req, res) {
 		});
 });
 
-app.get('/test', function (req, res) {
-	var request = require('request');
-
-	request({
-		method: 'head',
-		uri: 'https://psv4.vk.me/c4402/u48022545/audios/40464e4c543a.mp3?extra=3ezpVj1-PbY2x4TvgGkbgDXl6CZBBs5WS0zeCLDe_v6wRhVQKKfydgXhWjJkCVqN94yzQudss0qW79TgSYnQg3NnGnWjdw'
-	}, function (error, data) {
-//		console.log('body', JSON.parse(data.request.response.body));
-//		logger.debug(data);
-		res.json(data.headers);
-		console.log(data.headers);
-		res.end();
-	});
-});
-
 var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
 						process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
 						function () {
-							logger.debug('Listening on port %d', server.address().port);
+							logger.info('Listening on port %d', server.address().port);
 						}
 );
