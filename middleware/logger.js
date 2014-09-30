@@ -25,7 +25,7 @@ logger.add(logger.transports.Console, {
 			replace(/\..+/, '')
 			+ ']';
 	},
-	colorize: true
+	colorize: config.get('logging:colorize')
 });
 
 module.exports = logger;
