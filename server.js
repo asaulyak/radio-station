@@ -47,6 +47,7 @@ app.delete('/api/channel/remove/:uid', function (req, res) {
 		res.json({uid: uid});
 	}
 	else {
+		res.status(400);
 		res.json({
 			error: 'Channel does not exist.'
 		});
@@ -63,6 +64,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 		res.json({uid: uid});
 	}
 	else {
+		res.status(400);
 		res.json({
 			error: 'Channel does not exist.'
 		});
@@ -86,12 +88,14 @@ app.put('/api/channel/addtrack/:uid', function (req, res) {
 				logger.error('Error occurred while adding a track', req.body.engine, req.body.id, 'to channel', req.params.uid );
 				res.write('Error occurred while adding a track');
 			}
-					
-			res.end();
 		});
 	}
-
-	
+	else {
+		logger.error('Channel', req.params.uid, 'does not exist.');
+		res.status(400);
+		res.write('Channel does not exist.');
+	}
+	res.end();
 });
 
 app.get('/api/search/:query', function (req, res) {
