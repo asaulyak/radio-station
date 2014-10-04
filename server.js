@@ -4,7 +4,7 @@ var express = require('express'),
 	async = require('async'),
 	mediaSources = require('./lib/mediaSources'),
 	bodyParser = require('body-parser'),
-	guid = require('./middleware/guid')
+	guid = require('./middleware/guid'),
 	logger = require('./middleware/logger');
 
 var app = express(),
@@ -71,7 +71,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 	res.end();
 });
 
-app.put('/api/channel/:uid/addtrack/', function (req, res) {
+app.put('/api/channel/addtrack/:uid', function (req, res) {
 	logger.debug('uid', req.params.uid, req.body);
 	var channel = channels[req.params.uid];
 	if (channel) {
@@ -83,7 +83,8 @@ app.put('/api/channel/:uid/addtrack/', function (req, res) {
 				res.write(track.url);
 			}
 			else {
-				res.write(err);	
+				logger.error('Error occurred while adding a track', req.body.engine, req.body.id, 'to channel', req.params.uid );
+				res.write('Error occurred while adding a track');
 			}
 					
 			res.end();
@@ -123,3 +124,4 @@ var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
 							logger.info('Listening on port %d', server.address().port);
 						}
 );
+
