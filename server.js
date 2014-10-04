@@ -83,7 +83,8 @@ app.put('/api/channel/addtrack/:uid', function (req, res) {
 				res.write(track.url);
 			}
 			else {
-				res.write(err);	
+				logger.error('Error occurred while adding a track', req.body.engine, req.body.id, 'to channel', req.params.uid );
+				res.write('Error occurred while adding a track');
 			}
 					
 			res.end();
