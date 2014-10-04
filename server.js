@@ -4,7 +4,7 @@ var express = require('express'),
 	async = require('async'),
 	mediaSources = require('./lib/mediaSources'),
 	bodyParser = require('body-parser'),
-	guid = require('./middleware/guid')
+	guid = require('./middleware/guid'),
 	logger = require('./middleware/logger');
 
 var app = express(),
