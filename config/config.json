@@ -4,7 +4,8 @@
 		"bitRate": 40960
 	},
 	"logging": {
-		"level": "debug"
+		"level": "debug",
+		"colorize": true
 	},
 	"mediaSources": {
 		"vk": {
