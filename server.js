@@ -14,13 +14,14 @@ app.use(bodyParser.json());
 
 app.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
-	logger.debug('play channel', uid);
-	
+	logger.debug('Play channel', uid);
+
 	var channel = channels[uid];
 	if (channel) {
 		res.writeHead(200, {
 			'Content-Type': 'audio/mpeg'
 		});
+
 		channel.join(res);
 	}
 	else {
@@ -30,7 +31,7 @@ app.get('/api/channel/listen/:uid', function (req, res) {
 });
 
 app.put('/api/channel/create/:name', function (req, res) {
-	logger.debug('/channel/create/');
+	logger.debug('Create channel', req.params.name);
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
 
@@ -85,7 +86,7 @@ app.put('/api/channel/addtrack/:uid', function (req, res) {
 				res.write(track.url);
 			}
 			else {
-				logger.error('Error occurred while adding a track', req.body.engine, req.body.id, 'to channel', req.params.uid );
+				logger.error('Error occurred while adding a track', req.body.engine, req.body.id, 'to channel', req.params.uid);
 				res.write('Error occurred while adding a track');
 			}
 		});
@@ -123,9 +124,9 @@ app.get('/api/search/:query', function (req, res) {
 });
 
 var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
-						process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
-						function () {
-							logger.info('Listening on port %d', server.address().port);
-						}
+		process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
+	function () {
+		logger.info('Listening on port %d', server.address().port);
+	}
 );
 
