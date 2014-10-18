@@ -30,7 +30,7 @@ app.get('/api/channel/listen/:uid', function (req, res) {
 	}
 });
 
-app.put('/api/channel/create/:name', function (req, res) {
+app.post('/api/channel/create/:name', function (req, res) {
 	logger.debug('Create channel', req.params.name);
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
@@ -74,7 +74,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 	res.end();
 });
 
-app.put('/api/channel/addtrack/:uid', function (req, res) {
+app.post('/api/channel/addtrack/:uid', function (req, res) {
 	logger.debug('uid', req.params.uid, req.body);
 	var channel = channels[req.params.uid];
 	if (channel) {
