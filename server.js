@@ -1,18 +1,17 @@
-var express = require('express'),
-	config = require('./config'),
+var config = require('./config'),
 	Channel = require('./lib/channel'),
 	async = require('async'),
 	mediaSources = require('./lib/mediaSources'),
-	bodyParser = require('body-parser'),
 	guid = require('./middleware/guid'),
-	logger = require('./middleware/logger');
+	logger = require('./middleware/logger'),
+	restify = require('restify');
 
-var app = express(),
+var server = restify.createServer(),
 	channels = {};
 
-app.use(bodyParser.json());
+server.use(restify.bodyParser());
 
-app.get('/api/channel/listen/:uid', function (req, res) {
+server.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
 	logger.debug('Play channel', uid);
 
@@ -30,7 +29,7 @@ app.get('/api/channel/listen/:uid', function (req, res) {
 	}
 });
 
-app.post('/api/channel/create/:name', function (req, res) {
+server.post('/api/channel/create/:name', function (req, res) {
 	logger.debug('Create channel', req.params.name);
 	var uid = guid();
 	channels[uid] = new Channel(req.params.name);
@@ -39,7 +38,7 @@ app.post('/api/channel/create/:name', function (req, res) {
 	res.end();
 });
 
-app.delete('/api/channel/remove/:uid', function (req, res) {
+server.del('/api/channel/remove/:uid', function (req, res) {
 	var uid = req.params.uid,
 		channel = channels[uid];
 	if (channel) {
@@ -57,7 +56,7 @@ app.delete('/api/channel/remove/:uid', function (req, res) {
 	res.end();
 });
 
-app.post('/api/channel/start/:uid', function (req, res) {
+server.post('/api/channel/start/:uid', function (req, res) {
 	var uid = req.params.uid,
 		channel = channels[uid];
 	if (channel) {
@@ -74,7 +73,7 @@ app.post('/api/channel/start/:uid', function (req, res) {
 	res.end();
 });
 
-app.post('/api/channel/addtrack/:uid', function (req, res) {
+server.post('/api/channel/addtrack/:uid', function (req, res) {
 	logger.debug('uid', req.params.uid, req.body);
 	var channel = channels[req.params.uid];
 	if (channel) {
@@ -99,7 +98,7 @@ app.post('/api/channel/addtrack/:uid', function (req, res) {
 	res.end();
 });
 
-app.get('/api/search/:query', function (req, res) {
+server.get('/api/search/:query', function (req, res) {
 
 	// Create array of tasks to be ran for each media source
 	var tasks = mediaSources.getEngines().map(function (source) {
@@ -123,7 +122,7 @@ app.get('/api/search/:query', function (req, res) {
 		});
 });
 
-var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
+server.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
 		process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
 	function () {
 		logger.info('Listening on port %d', server.address().port);
