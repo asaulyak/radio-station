@@ -9,7 +9,47 @@ var config = require('./config'),
 var server = restify.createServer(),
 	channels = {};
 
+// Restify bundles
 server.use(restify.bodyParser());
+server.use(restify.fullResponse());
+
+function unknownMethodHandler(req, res, cb) {
+	if (req.method.toLowerCase() === 'options') {
+		var allowHeaders = ['Accept', 'Accept-Version', 'Content-Type', 'Api-Version'];
+
+		if (res.methods.indexOf('OPTIONS') === -1) {
+			res.methods.push('OPTIONS');
+		}
+
+		res.header('Access-Control-Allow-Credentials', true);
+		res.header('Access-Control-Allow-Headers', allowHeaders.join(', '));
+		res.header('Access-Control-Allow-Methods', res.methods.join(', '));
+		res.header('Access-Control-Allow-Origin', req.headers.origin);
+
+		return res.send(204);
+	}
+	else if (req.method.toLowerCase() === 'head') {
+		res.methods.push('OPTIONS');
+		logger.info('Response data', res.methods);
+		logger.info('cb', cb);
+		for(var t in cb) {
+			console.log(t);
+		}
+
+		cb();
+
+		//res.status(200);
+		//res.end();
+
+		res.send(200);
+
+	}
+	else {
+		return res.send(new restify.MethodNotAllowedError());
+	}
+}
+
+server.on('MethodNotAllowed', unknownMethodHandler);
 
 server.get('/api/channel/listen/:uid', function (req, res) {
 	var uid = req.params.uid;
@@ -98,7 +138,7 @@ server.post('/api/channel/addtrack/:uid', function (req, res) {
 	res.end();
 });
 
-server.get('/api/search/:query', function (req, res) {
+server.get('/api/search/:query', function (req, res, next) {
 
 	// Create array of tasks to be ran for each media source
 	var tasks = mediaSources.getEngines().map(function (source) {
@@ -120,6 +160,34 @@ server.get('/api/search/:query', function (req, res) {
 			res.json([].concat.apply([], results));
 			res.end();
 		});
+
+	return next();
+});
+
+server.head('/api/search/:query', function (req, res, next) {
+
+	// Create array of tasks to be ran for each media source
+	var tasks = mediaSources.getEngines().map(function (source) {
+		return function (callback) {
+			source.searchMusic(encodeURIComponent(req.params.query), callback);
+		}
+	});
+
+	// Run music search in parallel
+	async.parallel(tasks,
+		function (err, results) {
+			if (err) {
+				res.json(err);
+				res.end();
+				return;
+			}
+
+			// Merge arrays of results and return those as JSON
+			res.json([].concat.apply([], results));
+			res.end();
+		});
+
+	return next();
 });
 
 server.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
