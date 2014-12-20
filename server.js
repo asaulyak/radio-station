@@ -4,7 +4,8 @@ var config = require('./config'),
 	mediaSources = require('./lib/mediaSources'),
 	guid = require('./middleware/guid'),
 	logger = require('./middleware/logger'),
-	restify = require('restify');
+	restify = require('restify'),
+	app = require('./lib/app');
 
 var server = restify.createServer(),
 	channels = {};
@@ -27,22 +28,6 @@ function unknownMethodHandler(req, res, cb) {
 		res.header('Access-Control-Allow-Origin', req.headers.origin);
 
 		return res.send(204);
-	}
-	else if (req.method.toLowerCase() === 'head') {
-		res.methods.push('OPTIONS');
-		logger.info('Response data', res.methods);
-		logger.info('cb', cb);
-		for(var t in cb) {
-			console.log(t);
-		}
-
-		cb();
-
-		//res.status(200);
-		//res.end();
-
-		res.send(200);
-
 	}
 	else {
 		return res.send(new restify.MethodNotAllowedError());
@@ -139,27 +124,15 @@ server.post('/api/channel/addtrack/:uid', function (req, res) {
 });
 
 server.get('/api/search/:query', function (req, res, next) {
-
-	// Create array of tasks to be ran for each media source
-	var tasks = mediaSources.getEngines().map(function (source) {
-		return function (callback) {
-			source.searchMusic(encodeURIComponent(req.params.query), callback);
+	app.searchTrack(req.params.query, function (err, results) {
+		if (err) {
+			res.json(err);
+		} else {
+			res.json( results);
 		}
+
+		res.end();
 	});
-
-	// Run music search in parallel
-	async.parallel(tasks,
-		function (err, results) {
-			if (err) {
-				res.json(err);
-				res.end();
-				return;
-			}
-
-			// Merge arrays of results and return those as JSON
-			res.json([].concat.apply([], results));
-			res.end();
-		});
 
 	return next();
 });
