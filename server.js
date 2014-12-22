@@ -1,6 +1,4 @@
 var config = require('./config'),
-	Channel = require('./lib/channel'),
-	mediaSources = require('./lib/mediaSources'),
 	logger = require('./middleware/logger'),
 	restify = require('restify'),
 	routes = require('./lib/routes');
@@ -11,8 +9,11 @@ var server = restify.createServer();
 server.use(restify.bodyParser());
 server.use(restify.fullResponse());
 
-server.on('MethodNotAllowed', routes.unknownMethodHandler);
+// Subscribe to server events
+server.on('MethodNotAllowed', routes.onUnknownMethodRequest);
+server.on('after', routes.onRequestExecuted);
 
+// Routes
 server.get('/api/channel/listen/:uid', routes.listenChannel);
 
 server.post('/api/channel/create/:name', routes.createChannel);
@@ -27,6 +28,7 @@ server.get('/api/search/:query', routes.searchTracks);
 
 server.head('/api/search/:query', routes.searchTracks);
 
+// Start server
 server.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
 	process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
 	function () {
