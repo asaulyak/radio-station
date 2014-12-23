@@ -16,7 +16,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "set NODE_ENV=development && node server.js"
+    "start": "set NODE_ENV=development && set OPENSHIFT_NODEJS_PORT=8585 && node server.js"
   },
   "repository": {
     "type": "git",

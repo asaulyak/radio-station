@@ -3,6 +3,12 @@ var nconf = require('nconf'),
 
 nconf.argv()
 	.env()
-	.file({file: path.join(__dirname, 'config.json')});
+	.file({
+		file: path.join(__dirname, 'config.json')
+	});
 
-module.exports = nconf;
+var environment = nconf.get('NODE_ENV').trim() + '' || 'development';
+
+var config = nconf.get(environment);
+console.log('nconf.get(environment)', nconf.get('NODE_ENV').toString(), config);
+module.exports = config;
