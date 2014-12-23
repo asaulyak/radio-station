@@ -7,7 +7,6 @@
     "async": "^0.9.0",
     "body-parser": "^1.8.0",
     "jshint": "~2.5.5",
-    "konfig": "^0.2.0",
     "nconf": "^0.6.9",
     "path": "^0.4.9",
     "request": "~2.39.0",
@@ -17,7 +16,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "set NODE_ENV=development && node server.js"
   },
   "repository": {
     "type": "git",
