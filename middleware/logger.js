@@ -17,15 +17,13 @@ logger.addColors({
 });
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
-	level: config.get('logging:level'),
+	level: config.logging.level,
 	timestamp: function () {
-		return '['
-			+ new Date().toISOString().
+		return '[' + new Date().toISOString().
 			replace(/T/, ' ').
-			replace(/\..+/, '')
-			+ ']';
+			replace(/\..+/, '')	+ ']';
 	},
-	colorize: config.get('logging:colorize')
+	colorize: config.logging.colorize
 });
 
 module.exports = logger;

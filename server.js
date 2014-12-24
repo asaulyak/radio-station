@@ -1,127 +1,39 @@
-var express = require('express'),
-	config = require('./config'),
-	Channel = require('./lib/channel'),
-	async = require('async'),
-	mediaSources = require('./lib/mediaSources'),
-	bodyParser = require('body-parser'),
-	guid = require('./middleware/guid'),
-	logger = require('./middleware/logger');
+var config = require('./config'),
+	logger = require('./middleware/logger'),
+	restify = require('restify'),
+	routes = require('./lib/routes');
 
-var app = express(),
-	channels = {};
+var server = restify.createServer();
 
-app.use(bodyParser.json());
+// Restify bundles
+server.use(restify.bodyParser());
+server.use(restify.fullResponse());
 
-app.get('/api/channel/listen/:uid', function (req, res) {
-	var uid = req.params.uid;
-	logger.debug('play channel', uid);
-	
-	var channel = channels[uid];
-	if (channel) {
-		res.writeHead(200, {
-			'Content-Type': 'audio/mpeg'
-		});
-		channel.join(res);
+// Subscribe to server events
+server.on('MethodNotAllowed', routes.onUnknownMethodRequest);
+server.on('after', routes.onRequestExecuted);
+
+// Routes
+server.get('/api/channel/listen/:uid', routes.listenChannel);
+
+server.post('/api/channel/create/:name', routes.createChannel);
+
+server.del('/api/channel/remove/:uid', routes.deleteChannel);
+
+server.post('/api/channel/start/:uid', routes.startChannel);
+
+server.post('/api/channel/addtrack/:uid', routes.addTrackToChannel);
+
+server.get('/api/search/:query', routes.searchTracks);
+
+server.head('/api/search/:query', routes.searchTracks);
+
+// Start server
+server.listen(
+	config.port,
+	config.ip,
+	function () {
+		logger.info('Listening on port %d', server.address().port);
 	}
-	else {
-		res.status(404);
-		res.end();
-	}
-});
-
-app.put('/api/channel/create/:name', function (req, res) {
-	logger.debug('/channel/create/');
-	var uid = guid();
-	channels[uid] = new Channel(req.params.name);
-
-	res.json({uid: uid});
-	res.end();
-});
-
-app.delete('/api/channel/remove/:uid', function (req, res) {
-	var uid = req.params.uid,
-		channel = channels[uid];
-	if (channel) {
-		channel.stop();
-		channel = null;
-		res.json({uid: uid});
-	}
-	else {
-		res.json({
-			error: 'Channel does not exist.'
-		});
-	}
-
-	res.end();
-});
-
-app.post('/api/channel/start/:uid', function (req, res) {
-	var uid = req.params.uid,
-		channel = channels[uid];
-	if (channel) {
-		channel.start();
-		res.json({uid: uid});
-	}
-	else {
-		res.json({
-			error: 'Channel does not exist.'
-		});
-	}
-
-	res.end();
-});
-
-app.put('/api/channel/addtrack/:uid', function (req, res) {
-	logger.debug('uid', req.params.uid, req.body);
-	var channel = channels[req.params.uid];
-	if (channel) {
-		var engine = mediaSources.getEngine(req.body.engine);
-
-		engine.getTrack(req.body.id, function (err, track) {
-			if (!err) {
-				channel.addTrack(track);
-				res.write(track.url);
-			}
-			else {
-				logger.error('Error occurred while adding a track', req.body.engine, req.body.id, 'to channel', req.params.uid );
-				res.write('Error occurred while adding a track');
-			}
-					
-			res.end();
-		});
-	}
-
-	
-});
-
-app.get('/api/search/:query', function (req, res) {
-
-	// Create array of tasks to be ran for each media source
-	var tasks = mediaSources.getEngines().map(function (source) {
-		return function (callback) {
-			source.searchMusic(encodeURIComponent(req.params.query), callback);
-		}
-	});
-
-	// Run music search in parallel
-	async.parallel(tasks,
-		function (err, results) {
-			if (err) {
-				res.json(err);
-				res.end();
-				return;
-			}
-
-			// Merge arrays of results and return those as JSON
-			res.json([].concat.apply([], results));
-			res.end();
-		});
-});
-
-var server = app.listen(process.env.OPENSHIFT_NODEJS_PORT || config.get('port'),
-						process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
-						function () {
-							logger.info('Listening on port %d', server.address().port);
-						}
 );
 
