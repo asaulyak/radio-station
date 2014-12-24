@@ -1,6 +1,7 @@
 {
-  "default": {
-	"port": 1337,
+  "openshift": {
+	"port": 8080,
+	"ip": "127.0.0.1",
 	"streaming": {
 	  "bitRate": 40960
 	},
@@ -25,7 +26,8 @@
   },
 
   "development": {
-	"port": 8585,
+	"port": 1337,
+	"ip": "127.0.0.1",
 	"streaming": {
 	  "bitRate": 40960
 	},

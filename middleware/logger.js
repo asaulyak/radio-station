@@ -1,8 +1,6 @@
 var logger = require('winston'),
 	config = require('../config');
 
-console.log('config', config);
-
 logger.setLevels({
 	debug: 0,
 	info: 1,

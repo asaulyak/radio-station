@@ -29,8 +29,9 @@ server.get('/api/search/:query', routes.searchTracks);
 server.head('/api/search/:query', routes.searchTracks);
 
 // Start server
-server.listen(config.port,
-	process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1',
+server.listen(
+	config.port,
+	config.ip,
 	function () {
 		logger.info('Listening on port %d', server.address().port);
 	}
