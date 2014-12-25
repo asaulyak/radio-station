@@ -5,6 +5,8 @@ var config = require('./config'),
 
 var server = restify.createServer();
 
+global.io = require('socket.io').listen(server.server);
+
 // Restify bundles
 server.use(restify.bodyParser());
 server.use(restify.fullResponse());
