@@ -30,6 +30,9 @@ server.get('/api/search/:query', routes.searchTracks);
 
 server.head('/api/search/:query', routes.searchTracks);
 
+// Web sockets
+global.io.sockets.on('connection', routes.webSocket.onConnect);
+
 // Start server
 server.listen(
 	config.port,
