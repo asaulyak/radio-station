@@ -17,17 +17,11 @@ server.on('after', routes.onRequestExecuted);
 
 // Routes
 server.get('/api/channel/listen/:uid', routes.listenChannel);
-
 server.post('/api/channel/create/:name', routes.createChannel);
-
 server.del('/api/channel/remove/:uid', routes.deleteChannel);
-
 server.post('/api/channel/start/:uid', routes.startChannel);
-
 server.post('/api/channel/addtrack/:uid', routes.addTrackToChannel);
-
 server.get('/api/search/:query', routes.searchTracks);
-
 server.head('/api/search/:query', routes.searchTracks);
 
 // Web sockets
