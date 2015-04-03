@@ -16,7 +16,7 @@ server.on('MethodNotAllowed', routes.onUnknownMethodRequest);
 server.on('after', routes.onRequestExecuted);
 
 // Routes
-server.get('/', routes.root);
+server.get('/api', routes.root);
 server.get('/api/channel/listen/:uid', routes.listenChannel);
 server.post('/api/channel/create/:name', routes.createChannel);
 server.del('/api/channel/remove/:uid', routes.deleteChannel);
