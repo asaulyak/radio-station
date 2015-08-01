@@ -1,5 +1,5 @@
-var logger = require('winston'),
-	config = require('../config');
+var logger = require('winston');
+var config = require('../config');
 
 logger.setLevels({
 	debug: 0,
