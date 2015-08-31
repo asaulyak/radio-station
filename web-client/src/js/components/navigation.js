@@ -1,8 +1,15 @@
 var React = require('react');
 var Router = require('react-router-component');
 var Link = Router.Link;
+var NavigationItem = require('./navigationItem');
 
 var Navigation = React.createClass({
+	getInitialState: function () {
+		return {
+			links: []
+		};
+	},
+
 	getNavigationItems: function () {
 		var navigationItems = [
 			{
@@ -26,18 +33,20 @@ var Navigation = React.createClass({
 		var currentRoute = Router.environment.pathnameEnvironment.path;
 
 		return navigationItems.map(function (item) {
-			item.className = item.route === currentRoute ? 'active' : '';
+			item.isActive = item.route === currentRoute;
 
 			return item;
 		});
 	},
 
 	render: function () {
+		console.log(Router);
 		var links = this.getNavigationItems().map(function (item) {
 			return (
-				<Link key={item.route} href={item.route} className={'item ' + item.className}>{item.displayName}</Link>
+				<NavigationItem key={item.route} displayName={item.displayName} isActive={item.isActive} route={item.route}/>
 			);
 		});
+
 		return (
 			<nav className="ui menu inverted">
 				<h3 className="header item">Online Radio</h3>
