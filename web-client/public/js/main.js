@@ -22346,7 +22346,7 @@ var React = require('react');
 var About = React.createClass({displayName: "About",
 	render: function () {
 		return (
-			React.createElement("h1", null, "About Online Radio")
+			React.createElement("h1", null, "About Online Radio1")
 		);
 	}
 });
@@ -22439,17 +22439,60 @@ module.exports = Index;
 
 },{"react":188}],195:[function(require,module,exports){
 var React = require('react');
-var Link = require('react-router-component').Link;
+var Router = require('react-router-component');
+var Link = Router.Link;
 
 var Navigation = React.createClass({displayName: "Navigation",
+	getNavigationItems: function () {
+		var navigationItems = [
+			{
+				route: '/',
+				displayName: 'Home'
+			},
+			{
+				route: '/about',
+				displayName: 'About'
+			},
+			{
+				route: '/channel',
+				displayName: 'Create channel'
+			},
+			{
+				route: '/channels',
+				displayName: 'Browse channels'
+			}
+		];
+
+		//var navigationItems = {
+		//	'/': 'Home',
+		//	'/about': 'About',
+		//	'/channel': 'Create channel',
+		//	'/channels': 'Browse channels'
+		//};
+
+		var currentRoute = Router.environment.pathnameEnvironment.path;
+
+		//var currentItem = navigationItems[currentRoute];
+
+		//currentItem.className = 'active';
+
+		return navigationItems.map(function (item) {
+			item.className = item.route === currentRoute ? 'active' : '';
+
+			return item;
+		});
+	},
+
 	render: function () {
+		var links = this.getNavigationItems().map(function (item) {
+			return (
+				React.createElement(Link, {key: item.route, href: item.route, className: 'item ' + item.className}, item.displayName)
+			);
+		});
 		return (
 			React.createElement("nav", {className: "ui menu inverted"}, 
 				React.createElement("h3", {className: "header item"}, "Online Radio"), 
-				React.createElement(Link, {href: "/", className: "item active"}, "Home"), 
-				React.createElement(Link, {href: "/about", className: "item"}, "About"), 
-				React.createElement(Link, {href: "/channel", className: "item"}, "Create channel"), 
-				React.createElement(Link, {href: "/channels", className: "item"}, "Browse channels")
+				links
 			)
 		);
 	}
