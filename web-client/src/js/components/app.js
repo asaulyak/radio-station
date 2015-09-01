@@ -1,8 +1,8 @@
 var React = require('react');
 var Index = require('./index');
-var Channel = require('./channel');
-var Channels = require('./channels');
-var About = require('./about');
+var Channel = require('./pages/channel');
+var Channels = require('./pages/channels');
+var About = require('./pages/about');
 var Template = require('./template');
 var Router = require('react-router-component');
 

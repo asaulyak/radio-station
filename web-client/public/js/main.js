@@ -23024,7 +23024,24 @@ var React = require('react');
 var Channel = React.createClass({displayName: "Channel",
 	render: function () {
 		return (
-			React.createElement("h1", null, "Create Channel")
+			React.createElement("div", {className: "ui raised very padded text container segment"}, 
+				React.createElement("h1", {className: "ui header"}, "Create new channel"), 
+
+				React.createElement("form", {className: "ui form"}, 
+					React.createElement("div", {className: "field"}, 
+						React.createElement("label", null, "Channel Name"), 
+						React.createElement("input", {type: "text", name: "first-name", placeholder: "Channel Name"})
+					), 
+
+					React.createElement("div", {className: "field"}, 
+						React.createElement("div", {className: "ui checkbox"}, 
+							React.createElement("input", {type: "checkbox", tabIndex: "0", className: "hidden"}), 
+							React.createElement("label", null, "I agree to the Terms and Conditions")
+						)
+					), 
+					React.createElement("button", {className: "ui button", type: "submit"}, "Create")
+				)
+			)
 		);
 	}
 });

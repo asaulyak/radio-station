@@ -1,8 +1,8 @@
 var React = require('react');
 var Router = require('react-router-component');
-var AppActions = require('../actions/app-actions');
-var AppStore = require('../stores/app-store');
-var AppConstants = require('../constants/app-constants');
+var AppActions = require('../../actions/app-actions');
+var AppStore = require('../../stores/app-store');
+var AppConstants = require('../../constants/app-constants');
 
 var Link = Router.Link;
 
