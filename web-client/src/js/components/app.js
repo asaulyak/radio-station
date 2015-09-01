@@ -1,5 +1,5 @@
 var React = require('react');
-var Index = require('./index');
+var Home = require('./pages/home');
 var Channel = require('./pages/channel');
 var Channels = require('./pages/channels');
 var About = require('./pages/about');
@@ -14,7 +14,7 @@ var App = React.createClass({
 		return (
 			<Template>
 				<Locations>
-					<Location path="/" handler={Index}/>
+					<Location path="/" handler={Home}/>
 					<Location path="/about" handler={About}/>
 					<Location path="/channel" handler={Channel}/>
 					<Location path="/channels" handler={Channels}/>

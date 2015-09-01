@@ -4,7 +4,9 @@ var Navigation = require('./navigation');
 var Template = React.createClass({
 	render: function () {
 		return (
-			<Navigation/>
+			<header>
+				<Navigation/>
+			</header>
 		);
 	}
 });

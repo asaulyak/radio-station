@@ -40,7 +40,6 @@ var Navigation = React.createClass({
 	},
 
 	render: function () {
-		console.log(Router);
 		var links = this.getNavigationItems().map(function (item) {
 			return (
 				<NavigationItem key={item.route} displayName={item.displayName} isActive={item.isActive} route={item.route}/>
@@ -49,7 +48,9 @@ var Navigation = React.createClass({
 
 		return (
 			<nav className="ui menu inverted">
-				<h3 className="header item">Online Radio</h3>
+				<Link href="/">
+					<h3 className="header item"><i className="icon pied piper alternate inverted"></i> Online Radio</h3>
+				</Link>
 				{links}
 			</nav>
 		);
