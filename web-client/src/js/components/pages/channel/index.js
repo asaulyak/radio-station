@@ -1,7 +1,12 @@
 var React = require('react');
+var Steps = require('./steps');
+var channelActions = require('../../../actions/pageActions/channelActions');
 
 var Channel = React.createClass({
 	render: function () {
+		setTimeout(function () {
+			channelActions.stepMove('addTracks');
+		}, 2000);
 		return (
 			<div className="ui raised very padded container segment">
 				<h1 className="ui header">Create new channel</h1>
@@ -20,35 +25,7 @@ var Channel = React.createClass({
 					</div>
 					<button className="ui button" type="submit">Create</button>
 				</form>
-				<div className="ui horizontal divider">Step 1 of 3</div>
-				<div className="ui container">
-					<div className="ui steps attached">
-						<div className="active step">
-							<i className="write icon"></i>
-
-							<div className="content">
-								<div className="title">Choose name</div>
-								<div className="description">Choose your channel's name</div>
-							</div>
-						</div>
-						<div className="step">
-							<i className="music icon"></i>
-
-							<div className="content">
-								<div className="title">Add tracks</div>
-								<div className="description">Fill your channel with tracks</div>
-							</div>
-						</div>
-						<div className="step">
-							<i className="announcement icon"></i>
-
-							<div className="content">
-								<div className="title">Start channel</div>
-								<div className="description">Start broadcasting</div>
-							</div>
-						</div>
-					</div>
-				</div>
+				<Steps/>
 			</div>
 		);
 	}

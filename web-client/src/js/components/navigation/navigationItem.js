@@ -1,6 +1,6 @@
 var React = require('react');
 var Router = require('react-router-component');
-var AppActions = require('../../actions/app-actions');
+var AppActions = require('../../actions/routerActions');
 var AppStore = require('../../stores/app-store');
 var AppConstants = require('../../constants/app-constants');
 
