@@ -4,9 +4,15 @@ var constants = require('../../../constants/app-constants');
 var pagesStore = require('../../../stores/pagesStore');
 
 module.exports = React.createClass({
+	steps: [
+		'chooseName',
+		'addTracks',
+		'startChannel'
+	],
+
 	getInitialState: function () {
 		return {
-			step: 'chooseName'
+			step: 0
 		};
 	},
 
@@ -42,15 +48,12 @@ module.exports = React.createClass({
 
 		return steps.map(function (step) {
 			return (
-				<div key={step.id}>
-					<div className="ui horizontal divider">Step 1 of 3</div>
-					<div className={(step.id === this.state.step ? 'active' : '') + ' step'}>
-						<i className={step.icon + ' icon'}></i>
+				<div key={step.id } className={(step.id === this.steps[this.state.step] ? 'active' : '') + ' step'}>
+					<i className={step.icon + ' icon'}></i>
 
-						<div className="content">
-							<div className="title">{step.displayName}</div>
-							<div className="description">{step.description}</div>
-						</div>
+					<div className="content">
+						<div className="title">{step.displayName}</div>
+						<div className="description">{step.description}</div>
 					</div>
 				</div>
 			);
@@ -62,6 +65,7 @@ module.exports = React.createClass({
 
 		return (
 			<div className="ui container">
+				<div className="ui horizontal divider">Step {this.state.step + 1} out of 3</div>
 				<div className="ui steps attached">
 					{steps}
 				</div>

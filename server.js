@@ -15,7 +15,7 @@ server.use(restify.fullResponse());
 server.on('MethodNotAllowed', routes.onUnknownMethodRequest);
 server.on('after', routes.onRequestExecuted);
 
-// Routes
+// Routes REST API
 server.get('/api', routes.root);
 server.get('/api/channel/listen/:uid', routes.listenChannel);
 server.post('/api/channel/create/:name', routes.createChannel);
@@ -24,6 +24,16 @@ server.post('/api/channel/start/:uid', routes.startChannel);
 server.post('/api/channel/addtrack/:uid', routes.addTrackToChannel);
 server.get('/api/search/:query', routes.searchTracks);
 server.head('/api/search/:query', routes.searchTracks);
+
+// Web client routes
+server.get(/public\/.*/, restify.serveStatic({
+	'directory': __dirname + '/web-client/'
+}));
+
+server.get(/.*/, restify.serveStatic({
+	'directory': __dirname + '/web-client/public/',
+	'file': 'index.html'
+}));
 
 // Web sockets
 global.io.sockets.on('connection', routes.webSocket.onConnect);

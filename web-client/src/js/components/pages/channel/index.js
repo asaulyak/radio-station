@@ -1,12 +1,8 @@
 var React = require('react');
 var Steps = require('./steps');
-var channelActions = require('../../../actions/pageActions/channelActions');
 
 var Channel = React.createClass({
 	render: function () {
-		setTimeout(function () {
-			channelActions.stepMove('addTracks');
-		}, 2000);
 		return (
 			<div className="ui raised very padded container segment">
 				<h1 className="ui header">Create new channel</h1>
@@ -19,7 +15,7 @@ var Channel = React.createClass({
 
 					<div className="field">
 						<div className="ui checkbox">
-							<input type="checkbox" tabIndex="0" className="hidden"/>
+							<input type="checkbox" tabIndex="0"/>
 							<label>I agree to the Terms and Conditions</label>
 						</div>
 					</div>
