@@ -2,9 +2,10 @@ var AppConstants = require('../constants/app-constants');
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 
 var AppActions = {
-	resetRoute: function () {
+	navigate: function (path) {
 		AppDispatcher.handleViewAction({
-			actionType: AppConstants.RESET_ROUTE
+			actionType: AppConstants.actionTypes.ROUTE_NAVIGATE,
+			path: path
 		});
 	}
 };

@@ -1,7 +1,7 @@
 var React = require('react');
 var Navigation = require('./navigation');
 
-var Template = React.createClass({
+var Header = React.createClass({
 	render: function () {
 		return (
 			<header>
@@ -11,4 +11,4 @@ var Template = React.createClass({
 	}
 });
 
-module.exports = Template;
+module.exports = Header;

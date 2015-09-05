@@ -2,7 +2,7 @@ var React = require('react');
 var Router = require('react-router-component');
 var AppActions = require('../../actions/routerActions');
 var AppStore = require('../../stores/app-store');
-var AppConstants = require('../../constants/app-constants');
+var Evevnts = require('../../constants/events');
 
 var Link = Router.Link;
 
@@ -17,8 +17,10 @@ var NavigationItem = React.createClass({
 	},
 
 	getInitialState: function () {
+		var currentRoute = Router.environment.pathnameEnvironment.path;
+
 		return {
-			isActive: false
+			isActive: this.props.route === currentRoute
 		};
 	},
 
@@ -28,23 +30,15 @@ var NavigationItem = React.createClass({
 		});
 	},
 
-	onClick: function () {
-		AppActions.resetRoute();
-		this.setActive(true);
-	},
-
 	componentWillMount: function () {
-		AppStore.on(AppConstants.RESET_ROUTE, function () {
-			this.setActive(false);
+		AppStore.on(Evevnts.routes.ROUTE_CHANGED, function (path) {
+			this.setActive(this.props.route === path);
 		}.bind(this));
-
-		var currentRoute = Router.environment.pathnameEnvironment.path;
-		this.setActive(this.props.route === currentRoute);
 	},
 
 	render: function () {
 		return (
-			<Link key={this.props.route} onClick={this.onClick} href={this.props.route}
+			<Link key={this.props.route}  href={this.props.route}
 			      className={this.getClassName()}>
 				{this.props.displayName}
 			</Link>

@@ -1,6 +1,6 @@
 var React = require('react');
 var channelActions = require('../../../actions/pageActions/channelActions');
-var constants = require('../../../constants/app-constants');
+var Events = require('../../../constants/events');
 var pagesStore = require('../../../stores/pagesStore');
 
 module.exports = React.createClass({
@@ -17,7 +17,7 @@ module.exports = React.createClass({
 	},
 
 	componentWillMount: function () {
-		pagesStore.on(constants.events.pages.channel.STEP_MOVE, function (e) {
+		pagesStore.on(Events.pages.channel.STEP_MOVE, function (e) {
 			this.setState({
 				step: e.step
 			});

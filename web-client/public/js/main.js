@@ -1128,7 +1128,6 @@ module.exports = NavigatableMixin;
 var React = require('react');
 
 function createClass(name) {
-  debugger;
   return React.createClass({
     displayName: name,
     propTypes: {
@@ -22978,21 +22977,22 @@ var AppActions = {
 
 module.exports = AppActions;
 
-},{"../../constants/app-constants":205,"../../dispatchers/app-dispatcher":206}],194:[function(require,module,exports){
+},{"../../constants/app-constants":205,"../../dispatchers/app-dispatcher":207}],194:[function(require,module,exports){
 var AppConstants = require('../constants/app-constants');
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 
 var AppActions = {
-	resetRoute: function () {
+	navigate: function (path) {
 		AppDispatcher.handleViewAction({
-			actionType: AppConstants.RESET_ROUTE
+			actionType: AppConstants.actionTypes.ROUTE_NAVIGATE,
+			path: path
 		});
 	}
 };
 
 module.exports = AppActions;
 
-},{"../constants/app-constants":205,"../dispatchers/app-dispatcher":206}],195:[function(require,module,exports){
+},{"../constants/app-constants":205,"../dispatchers/app-dispatcher":207}],195:[function(require,module,exports){
 var React = require('react');
 var Home = require('./pages/home');
 var Channel = require('./pages/channel');
@@ -23000,15 +23000,21 @@ var Channels = require('./pages/channels');
 var About = require('./pages/about');
 var Layout = require('./layout');
 var Router = require('react-router-component');
+var AppDispatcher = require('../dispatchers/app-dispatcher');
+var Actions = require('../actions/routerActions');
 
 var Locations = Router.Locations;
 var Location = Router.Location;
 
 var App = React.createClass({displayName: "App",
 	render: function () {
+		var onNavigation = function (path) {
+			Actions.navigate(path);
+		};
+
 		return (
 			React.createElement(Layout, null, 
-				React.createElement(Locations, null, 
+				React.createElement(Locations, {onBeforeNavigation: onNavigation}, 
 					React.createElement(Location, {path: "/", handler: Home}), 
 					React.createElement(Location, {path: "/about", handler: About}), 
 					React.createElement(Location, {path: "/channel", handler: Channel}), 
@@ -23021,7 +23027,7 @@ var App = React.createClass({displayName: "App",
 
 module.exports = App;
 
-},{"./layout":196,"./pages/about":200,"./pages/channel":201,"./pages/channels":203,"./pages/home":204,"react":192,"react-router-component":8}],196:[function(require,module,exports){
+},{"../actions/routerActions":194,"../dispatchers/app-dispatcher":207,"./layout":196,"./pages/about":200,"./pages/channel":201,"./pages/channels":203,"./pages/home":204,"react":192,"react-router-component":8}],196:[function(require,module,exports){
 var React = require('react');
 var Header = require('./navigation/header');
 
@@ -23042,7 +23048,7 @@ module.exports = Template;
 var React = require('react');
 var Navigation = require('./navigation');
 
-var Template = React.createClass({displayName: "Template",
+var Header = React.createClass({displayName: "Header",
 	render: function () {
 		return (
 			React.createElement("header", null, 
@@ -23052,7 +23058,7 @@ var Template = React.createClass({displayName: "Template",
 	}
 });
 
-module.exports = Template;
+module.exports = Header;
 
 },{"./navigation":198,"react":192}],198:[function(require,module,exports){
 var React = require('react');
@@ -23092,23 +23098,20 @@ var Navigation = React.createClass({displayName: "Navigation",
 		return navigationItems.map(function (item) {
 			item.isActive = item.route === currentRoute;
 
-			return item;
+			return (
+				React.createElement(NavigationItem, {key: item.route, displayName: item.displayName, isActive: item.isActive, 
+				                route: item.route})
+			);
 		});
 	},
 
 	render: function () {
-		var links = this.getNavigationItems().map(function (item) {
-			return (
-				React.createElement(NavigationItem, {key: item.route, displayName: item.displayName, isActive: item.isActive, route: item.route})
-			);
-		});
-
 		return (
 			React.createElement("nav", {className: "ui menu inverted"}, 
 				React.createElement(Link, {href: "/"}, 
 					React.createElement("h3", {className: "header item"}, React.createElement("i", {className: "icon pied piper alternate inverted"}), " Online Radio")
 				), 
-				links
+				this.getNavigationItems()
 			)
 		);
 	}
@@ -23121,7 +23124,7 @@ var React = require('react');
 var Router = require('react-router-component');
 var AppActions = require('../../actions/routerActions');
 var AppStore = require('../../stores/app-store');
-var AppConstants = require('../../constants/app-constants');
+var Evevnts = require('../../constants/events');
 
 var Link = Router.Link;
 
@@ -23136,8 +23139,10 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 	},
 
 	getInitialState: function () {
+		var currentRoute = Router.environment.pathnameEnvironment.path;
+
 		return {
-			isActive: false
+			isActive: this.props.route === currentRoute
 		};
 	},
 
@@ -23147,23 +23152,15 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 		});
 	},
 
-	onClick: function () {
-		AppActions.resetRoute();
-		this.setActive(true);
-	},
-
 	componentWillMount: function () {
-		AppStore.on(AppConstants.RESET_ROUTE, function () {
-			this.setActive(false);
+		AppStore.on(Evevnts.routes.ROUTE_CHANGED, function (path) {
+			this.setActive(this.props.route === path);
 		}.bind(this));
-
-		var currentRoute = Router.environment.pathnameEnvironment.path;
-		this.setActive(this.props.route === currentRoute);
 	},
 
 	render: function () {
 		return (
-			React.createElement(Link, {key: this.props.route, onClick: this.onClick, href: this.props.route, 
+			React.createElement(Link, {key: this.props.route, href: this.props.route, 
 			      className: this.getClassName()}, 
 				this.props.displayName
 			)
@@ -23173,7 +23170,7 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 
 module.exports = NavigationItem;
 
-},{"../../actions/routerActions":194,"../../constants/app-constants":205,"../../stores/app-store":208,"react":192,"react-router-component":8}],200:[function(require,module,exports){
+},{"../../actions/routerActions":194,"../../constants/events":206,"../../stores/app-store":209,"react":192,"react-router-component":8}],200:[function(require,module,exports){
 var React = require('react');
 
 var About = React.createClass({displayName: "About",
@@ -23225,7 +23222,7 @@ module.exports = Channel;
 },{"./steps":202,"react":192}],202:[function(require,module,exports){
 var React = require('react');
 var channelActions = require('../../../actions/pageActions/channelActions');
-var constants = require('../../../constants/app-constants');
+var Events = require('../../../constants/events');
 var pagesStore = require('../../../stores/pagesStore');
 
 module.exports = React.createClass({displayName: "exports",
@@ -23242,7 +23239,7 @@ module.exports = React.createClass({displayName: "exports",
 	},
 
 	componentWillMount: function () {
-		pagesStore.on(constants.events.pages.channel.STEP_MOVE, function (e) {
+		pagesStore.on(Events.pages.channel.STEP_MOVE, function (e) {
 			this.setState({
 				step: e.step
 			});
@@ -23299,7 +23296,7 @@ module.exports = React.createClass({displayName: "exports",
 	}
 });
 
-},{"../../../actions/pageActions/channelActions":193,"../../../constants/app-constants":205,"../../../stores/pagesStore":209,"react":192}],203:[function(require,module,exports){
+},{"../../../actions/pageActions/channelActions":193,"../../../constants/events":206,"../../../stores/pagesStore":210,"react":192}],203:[function(require,module,exports){
 var React = require('react');
 
 var Channels = React.createClass({displayName: "Channels",
@@ -23335,21 +23332,25 @@ module.exports = Home;
 
 },{"react":192}],205:[function(require,module,exports){
 module.exports = {
-	RESET_ROUTE: 'RESET_ROUTE',
-
-	events: {
-		routes: {
-			RESET_ROUTE: 'RESET_ROUTE'
-		},
-		pages: {
-			channel: {
-				STEP_MOVE: 'STEP_MOVE'
-			}
-		}
+	actionTypes: {
+		ROUTE_NAVIGATE: 'ROUTE_NAVIGATE',
+		STEP_MOVE: 'STEP_MOVE'
 	}
 };
 
 },{}],206:[function(require,module,exports){
+module.exports = {
+	routes: {
+		ROUTE_CHANGED: 'ROUTE_CHANGED'
+	},
+	pages: {
+		channel: {
+			STEP_MOVE: 'STEP_MOVE'
+		}
+	}
+};
+
+},{}],207:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
 var assign = require('react/lib/Object.assign');
 
@@ -23365,15 +23366,16 @@ var AppDispatcher = assign(new Dispatcher(), {
 
 module.exports = AppDispatcher;
 
-},{"flux":3,"react/lib/Object.assign":60}],207:[function(require,module,exports){
+},{"flux":3,"react/lib/Object.assign":60}],208:[function(require,module,exports){
 var App = require('./components/app');
 var React = require('react');
 
 React.render(React.createElement(App, null), window.document.getElementById('app'));
 
-},{"./components/app":195,"react":192}],208:[function(require,module,exports){
+},{"./components/app":195,"react":192}],209:[function(require,module,exports){
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 var AppConstants = require('../constants/app-constants');
+var Events = require('../constants/events');
 var assign = require('react/lib/Object.assign');
 var EventEmitter = require('events').EventEmitter;
 
@@ -23382,8 +23384,8 @@ var AppStore = assign(EventEmitter.prototype, {
 		var action = payload.action;
 
 		switch (action.actionType) {
-			case AppConstants.RESET_ROUTE:
-				AppStore.emit(AppConstants.RESET_ROUTE);
+			case AppConstants.actionTypes.ROUTE_NAVIGATE:
+				AppStore.emit(Events.routes.ROUTE_CHANGED, action.path);
 				break;
 		}
 
@@ -23393,10 +23395,11 @@ var AppStore = assign(EventEmitter.prototype, {
 
 module.exports = AppStore;
 
-},{"../constants/app-constants":205,"../dispatchers/app-dispatcher":206,"events":1,"react/lib/Object.assign":60}],209:[function(require,module,exports){
+},{"../constants/app-constants":205,"../constants/events":206,"../dispatchers/app-dispatcher":207,"events":1,"react/lib/Object.assign":60}],210:[function(require,module,exports){
 var AppDispatcher = require('../dispatchers/app-dispatcher');
-var AppConstants = require('../constants/app-constants');
+var Events = require('../constants/events');
 var assign = require('react/lib/Object.assign');
+var Constants = require('../constants/app-constants');
 var EventEmitter = require('events').EventEmitter;
 
 var store = assign(EventEmitter.prototype, {
@@ -23404,8 +23407,8 @@ var store = assign(EventEmitter.prototype, {
 		var action = payload.action;
 
 		switch (action.actionType) {
-			case AppConstants.events.pages.channel.STEP_MOVE:
-				store.emit(AppConstants.events.pages.channel.STEP_MOVE, {
+			case Constants.actionTypes.STEP_MOVE:
+				store.emit(Events.pages.channel.STEP_MOVE, {
 					step: action.step
 				});
 				break;
@@ -23417,4 +23420,4 @@ var store = assign(EventEmitter.prototype, {
 
 module.exports = store;
 
-},{"../constants/app-constants":205,"../dispatchers/app-dispatcher":206,"events":1,"react/lib/Object.assign":60}]},{},[207]);
+},{"../constants/app-constants":205,"../constants/events":206,"../dispatchers/app-dispatcher":207,"events":1,"react/lib/Object.assign":60}]},{},[208]);

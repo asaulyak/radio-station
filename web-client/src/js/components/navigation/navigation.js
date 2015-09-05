@@ -35,23 +35,20 @@ var Navigation = React.createClass({
 		return navigationItems.map(function (item) {
 			item.isActive = item.route === currentRoute;
 
-			return item;
+			return (
+				<NavigationItem key={item.route} displayName={item.displayName} isActive={item.isActive}
+				                route={item.route}/>
+			);
 		});
 	},
 
 	render: function () {
-		var links = this.getNavigationItems().map(function (item) {
-			return (
-				<NavigationItem key={item.route} displayName={item.displayName} isActive={item.isActive} route={item.route}/>
-			);
-		});
-
 		return (
 			<nav className="ui menu inverted">
 				<Link href="/">
 					<h3 className="header item"><i className="icon pied piper alternate inverted"></i> Online Radio</h3>
 				</Link>
-				{links}
+				{this.getNavigationItems()}
 			</nav>
 		);
 	}
