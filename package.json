@@ -44,7 +44,7 @@
     "reactify": "^1.1.1",
     "request": "~2.39.0",
     "require-dot-file": "^0.4.0",
-    "restify": "^2.8.5",
+    "restify": "^4.0.0",
     "semantic-ui": "^2.0.7",
     "socket.io": "^1.2.1",
     "throttle": "~1.0.3",
@@ -57,7 +57,7 @@
     "reactify": "^1.1.1"
   },
   "scripts": {
-    "start": "echo \"node started\""
+    "start": "node server"
   },
   "repository": {
     "type": "git",
