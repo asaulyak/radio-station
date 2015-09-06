@@ -1,7 +1,20 @@
 var React = require('react');
 var Steps = require('./steps');
+var Dispatcher = require('../../../dispatchers/app-dispatcher');
+var Constants = require('../../../constants/app-constants');
 
 var Channel = React.createClass({
+	onCreateChannelButtonClick: function (e) {
+		$.ajax({
+			url: '/api/channel/create/' + this.refs.channelName,
+			type: 'POST',
+			success: function(result) {
+				Dispatcher.dispatch()
+				// Do something with the result
+			}
+		});
+	},
+
 	render: function () {
 		return (
 			<div className="ui raised very padded container segment">
@@ -10,7 +23,7 @@ var Channel = React.createClass({
 				<form className="ui form">
 					<div className="field">
 						<label>Channel Name</label>
-						<input type="text" name="first-name" placeholder="Channel Name"/>
+						<input type="text" ref="channelName" name="first-name" placeholder="Channel Name"/>
 					</div>
 
 					<div className="field">
@@ -19,7 +32,7 @@ var Channel = React.createClass({
 							<label>I agree to the Terms and Conditions</label>
 						</div>
 					</div>
-					<button className="ui button" type="submit">Create</button>
+					<button className="ui button">Create</button>
 				</form>
 				<Steps/>
 			</div>

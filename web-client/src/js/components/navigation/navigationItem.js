@@ -1,8 +1,7 @@
 var React = require('react');
 var Router = require('react-router-component');
-var AppActions = require('../../actions/routerActions');
 var AppStore = require('../../stores/app-store');
-var Evevnts = require('../../constants/events');
+var Events = require('../../constants/events');
 
 var Link = Router.Link;
 
@@ -31,15 +30,15 @@ var NavigationItem = React.createClass({
 	},
 
 	componentWillMount: function () {
-		AppStore.on(Evevnts.routes.ROUTE_CHANGED, function (path) {
+		AppStore.on(Events.routes.ROUTE_CHANGED, function (path) {
 			this.setActive(this.props.route === path);
 		}.bind(this));
 	},
 
 	render: function () {
 		return (
-			<Link key={this.props.route}  href={this.props.route}
-			      className={this.getClassName()}>
+			<Link key={this.props.route} href={this.props.route}
+					className={this.getClassName()}>
 				{this.props.displayName}
 			</Link>
 		);

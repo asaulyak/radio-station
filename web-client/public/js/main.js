@@ -23100,7 +23100,7 @@ var Navigation = React.createClass({displayName: "Navigation",
 
 			return (
 				React.createElement(NavigationItem, {key: item.route, displayName: item.displayName, isActive: item.isActive, 
-				                route: item.route})
+								route: item.route})
 			);
 		});
 	},
@@ -23122,9 +23122,8 @@ module.exports = Navigation;
 },{"./navigationItem":199,"react":192,"react-router-component":8}],199:[function(require,module,exports){
 var React = require('react');
 var Router = require('react-router-component');
-var AppActions = require('../../actions/routerActions');
 var AppStore = require('../../stores/app-store');
-var Evevnts = require('../../constants/events');
+var Events = require('../../constants/events');
 
 var Link = Router.Link;
 
@@ -23153,7 +23152,7 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 	},
 
 	componentWillMount: function () {
-		AppStore.on(Evevnts.routes.ROUTE_CHANGED, function (path) {
+		AppStore.on(Events.routes.ROUTE_CHANGED, function (path) {
 			this.setActive(this.props.route === path);
 		}.bind(this));
 	},
@@ -23161,7 +23160,7 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 	render: function () {
 		return (
 			React.createElement(Link, {key: this.props.route, href: this.props.route, 
-			      className: this.getClassName()}, 
+					className: this.getClassName()}, 
 				this.props.displayName
 			)
 		);
@@ -23170,7 +23169,7 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 
 module.exports = NavigationItem;
 
-},{"../../actions/routerActions":194,"../../constants/events":206,"../../stores/app-store":209,"react":192,"react-router-component":8}],200:[function(require,module,exports){
+},{"../../constants/events":206,"../../stores/app-store":209,"react":192,"react-router-component":8}],200:[function(require,module,exports){
 var React = require('react');
 
 var About = React.createClass({displayName: "About",
@@ -23192,6 +23191,10 @@ var React = require('react');
 var Steps = require('./steps');
 
 var Channel = React.createClass({displayName: "Channel",
+	onCreateChannelButtonClick: function (e) {
+		
+	},
+
 	render: function () {
 		return (
 			React.createElement("div", {className: "ui raised very padded container segment"}, 
@@ -23209,7 +23212,7 @@ var Channel = React.createClass({displayName: "Channel",
 							React.createElement("label", null, "I agree to the Terms and Conditions")
 						)
 					), 
-					React.createElement("button", {className: "ui button", type: "submit"}, "Create")
+					React.createElement("button", {className: "ui button"}, "Create")
 				), 
 				React.createElement(Steps, null)
 			)

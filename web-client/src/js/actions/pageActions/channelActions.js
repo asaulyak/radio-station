@@ -3,7 +3,7 @@ var AppDispatcher = require('../../dispatchers/app-dispatcher');
 
 var AppActions = {
 	stepMove: function (step) {
-		AppDispatcher.handleViewAction({
+		AppDispatcher.dispatch({
 			actionType: AppConstants.events.pages.channel.STEP_MOVE,
 			step: step
 		});

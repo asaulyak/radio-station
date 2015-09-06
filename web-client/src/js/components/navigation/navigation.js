@@ -37,7 +37,7 @@ var Navigation = React.createClass({
 
 			return (
 				<NavigationItem key={item.route} displayName={item.displayName} isActive={item.isActive}
-				                route={item.route}/>
+								route={item.route}/>
 			);
 		});
 	},
