@@ -23204,10 +23204,38 @@ var Events = require('../../../constants/events');
 
 var Channel = React.createClass({displayName: "Channel",
 	componentWillMount: function () {
-		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, function (data) {
-			if(!data.error) {
-				Actions.stepMove(1);
-			}
+		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks.bind(this));
+	},
+
+	componentDidMount: function () {
+		$('#addTracks').hide();
+	},
+
+	getInitialState: function () {
+		return {
+			tracks: [
+				'Three Days Grace - Time Of Dying',
+				'Serj Tankian - Empty Walls',
+				'Skillet - Rise',
+				'IAMX - You Can Be Happy'
+			]
+		};
+	},
+
+	getTracks: function () {
+		return this.state.tracks.map(function (track) {
+			return (
+				React.createElement("div", {className: "item", key: track}, 
+					React.createElement("div", {className: "right floated content"}, 
+						React.createElement("div", {className: "ui button"}, "Add")
+					), 
+					React.createElement("i", {className: "large video play middle aligned icon"}), 
+
+					React.createElement("div", {className: "content"}, 
+						React.createElement("a", {className: "header"}, track)
+					)
+				)
+			);
 		});
 	},
 
@@ -23215,24 +23243,59 @@ var Channel = React.createClass({displayName: "Channel",
 		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
 
+	onChannelAddTracks: function (data) {
+		if (!data.error) {
+			Actions.stepMove(1);
+			$('#createChannel').hide();
+			$('#addTracks').show();
+		}
+	},
+
 	render: function () {
 		return (
 			React.createElement("div", {className: "ui raised very padded container segment"}, 
-				React.createElement("h1", {className: "ui header"}, "Create new channel"), 
+				React.createElement("div", {id: "createChannel"}, 
+					React.createElement("h1", {className: "ui header"}, "Create new channel"), 
 
-				React.createElement("form", {className: "ui form"}, 
-					React.createElement("div", {className: "field"}, 
-						React.createElement("label", null, "Channel Name"), 
-						React.createElement("input", {type: "text", ref: "channelName", name: "first-name", placeholder: "Channel Name"})
-					), 
+					React.createElement("form", {className: "ui form"}, 
+						React.createElement("div", {className: "field"}, 
+							React.createElement("label", null, "Channel Name"), 
+							React.createElement("input", {type: "text", ref: "channelName", name: "first-name", placeholder: "Channel Name"})
+						), 
 
-					React.createElement("div", {className: "field"}, 
-						React.createElement("div", {className: "ui checkbox"}, 
-							React.createElement("input", {type: "checkbox", tabIndex: "0"}), 
-							React.createElement("label", null, "I agree to the Terms and Conditions")
+						React.createElement("div", {className: "field"}, 
+							React.createElement("div", {className: "ui checkbox"}, 
+								React.createElement("input", {type: "checkbox", tabIndex: "0"}), 
+								React.createElement("label", null, "I agree to the Terms and Conditions")
+							)
+						), 
+						React.createElement("button", {onClick: this.onCreateChannelButtonClick, className: "ui button", type: "button"}, "Create"
 						)
+					)
+				), 
+				React.createElement("div", {id: "addTracks"}, 
+					React.createElement("h1", {className: "ui header"}, "Add tracks to channel"), 
+
+					React.createElement("div", {className: "ui search focus"}, 
+						React.createElement("div", {className: "ui left icon input"}, 
+							React.createElement("input", {className: "prompt", type: "text", placeholder: "Search Tracks", autocomplete: "off"}), 
+							React.createElement("i", {className: "pied piper alternate icon"})
+						)
+
 					), 
-					React.createElement("button", {onClick: this.onCreateChannelButtonClick, className: "ui button", type: "button"}, "Create")
+					React.createElement("div", {className: "ui container"}, 
+						React.createElement("div", {className: "attached segment"}, 
+							React.createElement("h4", {className: "ui horizontal divider header"}, 
+								React.createElement("i", {className: "music icon small"}), 
+								'Search Results'
+							), 
+
+							React.createElement("div", {className: "ui middle aligned divided list relaxed"}, 
+								this.getTracks()
+							)
+						)
+					)
+
 				), 
 				React.createElement(Steps, null)
 			)
@@ -23349,14 +23412,14 @@ var Channels = React.createClass({displayName: "Channels",
 	getChannels: function () {
 		return this.state.channels.map(function (channel) {
 			return (
-				React.createElement("div", {className: "item"}, 
+				React.createElement("div", {className: "item", key: channel}, 
 					React.createElement("div", {className: "right floated content"}, 
 						React.createElement("div", {className: "ui button"}, "Listen")
 					), 
-					React.createElement("i", {className: "large pied piper alternate middle aligned icon"}), 
+					React.createElement("i", {className: "large video play middle aligned icon"}), 
 
 					React.createElement("div", {className: "content"}, 
-						channel
+						React.createElement("a", {className: "header"}, channel)
 					)
 				)
 			);
@@ -23369,7 +23432,7 @@ var Channels = React.createClass({displayName: "Channels",
 				React.createElement("div", {className: "ui segment"}, 
 					React.createElement("h1", null, "Browse Channels"), 
 
-					React.createElement("div", {className: "ui middle aligned divided list"}, 
+					React.createElement("div", {className: "ui middle aligned divided list relaxed"}, 
 						this.getChannels()
 					)
 				)

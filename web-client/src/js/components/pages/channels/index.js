@@ -27,14 +27,14 @@ var Channels = React.createClass({
 	getChannels: function () {
 		return this.state.channels.map(function (channel) {
 			return (
-				<div className="item">
+				<div className="item" key={channel}>
 					<div className="right floated content">
 						<div className="ui button">Listen</div>
 					</div>
-					<i className="large pied piper alternate middle aligned icon"></i>
+					<i className="large video play middle aligned icon"></i>
 
 					<div className="content">
-						{channel}
+						<a className="header">{channel}</a>
 					</div>
 				</div>
 			);
@@ -47,7 +47,7 @@ var Channels = React.createClass({
 				<div className="ui segment">
 					<h1>Browse Channels</h1>
 
-					<div className="ui middle aligned divided list">
+					<div className="ui middle aligned divided list relaxed">
 						{this.getChannels()}
 					</div>
 				</div>
