@@ -2,17 +2,21 @@ var React = require('react');
 var Steps = require('./steps');
 var Dispatcher = require('../../../dispatchers/app-dispatcher');
 var Constants = require('../../../constants/app-constants');
+var Actions = require('../../../actions/pageActions/channelActions');
+var Store = require('../../../stores/pagesStore');
+var Events = require('../../../constants/events');
 
 var Channel = React.createClass({
-	onCreateChannelButtonClick: function (e) {
-		$.ajax({
-			url: '/api/channel/create/' + this.refs.channelName,
-			type: 'POST',
-			success: function(result) {
-				Dispatcher.dispatch()
-				// Do something with the result
+	componentWillMount: function () {
+		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, function (data) {
+			if(!data.error) {
+				Actions.stepMove(1);
 			}
 		});
+	},
+
+	onCreateChannelButtonClick: function () {
+		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
 
 	render: function () {
@@ -32,7 +36,7 @@ var Channel = React.createClass({
 							<label>I agree to the Terms and Conditions</label>
 						</div>
 					</div>
-					<button className="ui button">Create</button>
+					<button onClick={this.onCreateChannelButtonClick} className="ui button" type="button">Create</button>
 				</form>
 				<Steps/>
 			</div>

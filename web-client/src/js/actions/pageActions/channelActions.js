@@ -1,11 +1,18 @@
-var AppConstants = require('../../constants/app-constants');
-var AppDispatcher = require('../../dispatchers/app-dispatcher');
+var Constants = require('../../constants/app-constants');
+var Dispatcher = require('../../dispatchers/app-dispatcher');
 
 var AppActions = {
 	stepMove: function (step) {
-		AppDispatcher.dispatch({
-			actionType: AppConstants.events.pages.channel.STEP_MOVE,
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.STEP_MOVE,
 			step: step
+		});
+	},
+
+	createChannel: function (channelName) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.CREATE_CHANNEL,
+			channelName: channelName
 		});
 	}
 };

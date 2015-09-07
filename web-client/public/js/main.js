@@ -22963,14 +22963,21 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":62}],193:[function(require,module,exports){
-var AppConstants = require('../../constants/app-constants');
-var AppDispatcher = require('../../dispatchers/app-dispatcher');
+var Constants = require('../../constants/app-constants');
+var Dispatcher = require('../../dispatchers/app-dispatcher');
 
 var AppActions = {
 	stepMove: function (step) {
-		AppDispatcher.handleViewAction({
-			actionType: AppConstants.events.pages.channel.STEP_MOVE,
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.STEP_MOVE,
 			step: step
+		});
+	},
+
+	createChannel: function (channelName) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.CREATE_CHANNEL,
+			channelName: channelName
 		});
 	}
 };
@@ -22983,7 +22990,7 @@ var AppDispatcher = require('../dispatchers/app-dispatcher');
 
 var AppActions = {
 	navigate: function (path) {
-		AppDispatcher.handleViewAction({
+		AppDispatcher.dispatch({
 			actionType: AppConstants.actionTypes.ROUTE_NAVIGATE,
 			path: path
 		});
@@ -23189,10 +23196,23 @@ module.exports = About;
 },{"react":192}],201:[function(require,module,exports){
 var React = require('react');
 var Steps = require('./steps');
+var Dispatcher = require('../../../dispatchers/app-dispatcher');
+var Constants = require('../../../constants/app-constants');
+var Actions = require('../../../actions/pageActions/channelActions');
+var Store = require('../../../stores/pagesStore');
+var Events = require('../../../constants/events');
 
 var Channel = React.createClass({displayName: "Channel",
-	onCreateChannelButtonClick: function (e) {
-		
+	componentWillMount: function () {
+		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, function (data) {
+			if(!data.error) {
+				Actions.stepMove(1);
+			}
+		});
+	},
+
+	onCreateChannelButtonClick: function () {
+		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
 
 	render: function () {
@@ -23203,7 +23223,7 @@ var Channel = React.createClass({displayName: "Channel",
 				React.createElement("form", {className: "ui form"}, 
 					React.createElement("div", {className: "field"}, 
 						React.createElement("label", null, "Channel Name"), 
-						React.createElement("input", {type: "text", name: "first-name", placeholder: "Channel Name"})
+						React.createElement("input", {type: "text", ref: "channelName", name: "first-name", placeholder: "Channel Name"})
 					), 
 
 					React.createElement("div", {className: "field"}, 
@@ -23212,7 +23232,7 @@ var Channel = React.createClass({displayName: "Channel",
 							React.createElement("label", null, "I agree to the Terms and Conditions")
 						)
 					), 
-					React.createElement("button", {className: "ui button"}, "Create")
+					React.createElement("button", {onClick: this.onCreateChannelButtonClick, className: "ui button", type: "button"}, "Create")
 				), 
 				React.createElement(Steps, null)
 			)
@@ -23222,7 +23242,7 @@ var Channel = React.createClass({displayName: "Channel",
 
 module.exports = Channel;
 
-},{"./steps":202,"react":192}],202:[function(require,module,exports){
+},{"../../../actions/pageActions/channelActions":193,"../../../constants/app-constants":205,"../../../constants/events":206,"../../../dispatchers/app-dispatcher":207,"../../../stores/pagesStore":210,"./steps":202,"react":192}],202:[function(require,module,exports){
 var React = require('react');
 var channelActions = require('../../../actions/pageActions/channelActions');
 var Events = require('../../../constants/events');
@@ -23337,7 +23357,8 @@ module.exports = Home;
 module.exports = {
 	actionTypes: {
 		ROUTE_NAVIGATE: 'ROUTE_NAVIGATE',
-		STEP_MOVE: 'STEP_MOVE'
+		STEP_MOVE: 'STEP_MOVE',
+		CREATE_CHANNEL: 'CREATE_CHANNEL'
 	}
 };
 
@@ -23348,28 +23369,23 @@ module.exports = {
 	},
 	pages: {
 		channel: {
-			STEP_MOVE: 'STEP_MOVE'
+			STEP_MOVE: 'STEP_MOVE',
+			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS'
+		}
+	},
+	server: {
+		channel: {
+			CREATE_CHANNEL_RESPONSE: 'CREATE_CHANNEL_RESPONSE'
 		}
 	}
 };
 
 },{}],207:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
-var assign = require('react/lib/Object.assign');
 
-var AppDispatcher = assign(new Dispatcher(), {
-	handleViewAction: function (action) {
-		console.log('Dispatch event', action);
-		this.dispatch({
-			source: 'VIEW_ACTION',
-			action: action
-		});
-	}
-});
+module.exports = new Dispatcher();
 
-module.exports = AppDispatcher;
-
-},{"flux":3,"react/lib/Object.assign":60}],208:[function(require,module,exports){
+},{"flux":3}],208:[function(require,module,exports){
 var App = require('./components/app');
 var React = require('react');
 
@@ -23383,9 +23399,7 @@ var assign = require('react/lib/Object.assign');
 var EventEmitter = require('events').EventEmitter;
 
 var AppStore = assign(EventEmitter.prototype, {
-	dispatcherIndex: AppDispatcher.register(function (payload) {
-		var action = payload.action;
-
+	dispatcherIndex: AppDispatcher.register(function (action) {
 		switch (action.actionType) {
 			case AppConstants.actionTypes.ROUTE_NAVIGATE:
 				AppStore.emit(Events.routes.ROUTE_CHANGED, action.path);
@@ -23406,14 +23420,28 @@ var Constants = require('../constants/app-constants');
 var EventEmitter = require('events').EventEmitter;
 
 var store = assign(EventEmitter.prototype, {
-	dispatcherIndex: AppDispatcher.register(function (payload) {
-		var action = payload.action;
-
+	dispatcherIndex: AppDispatcher.register(function (action) {
 		switch (action.actionType) {
 			case Constants.actionTypes.STEP_MOVE:
 				store.emit(Events.pages.channel.STEP_MOVE, {
 					step: action.step
 				});
+				break;
+
+			case Constants.actionTypes.CREATE_CHANNEL:
+				$.ajax({
+					url: '/api/channel/create/' + action.channelName,
+					method: 'POST'
+				})
+					.done(function (data) {
+						store.emit(Events.pages.channel.CHANNEL_ADD_TRACKS,
+							{
+								channelId: data.uid
+							});
+					})
+				.fail(function (data) {
+						debugger;
+					});
 				break;
 		}
 

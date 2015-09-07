@@ -5,9 +5,7 @@ var assign = require('react/lib/Object.assign');
 var EventEmitter = require('events').EventEmitter;
 
 var AppStore = assign(EventEmitter.prototype, {
-	dispatcherIndex: AppDispatcher.register(function (payload) {
-		var action = payload.action;
-
+	dispatcherIndex: AppDispatcher.register(function (action) {
 		switch (action.actionType) {
 			case AppConstants.actionTypes.ROUTE_NAVIGATE:
 				AppStore.emit(Events.routes.ROUTE_CHANGED, action.path);
