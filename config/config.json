@@ -27,7 +27,7 @@
 
   "development": {
 	"port": 1337,
-	"ip": "127.0.0.1",
+	"ip": "0.0.0.0",
 	"streaming": {
 	  "bitRate": 40960
 	},
