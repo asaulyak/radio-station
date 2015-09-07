@@ -23323,11 +23323,55 @@ module.exports = React.createClass({displayName: "exports",
 var React = require('react');
 
 var Channels = React.createClass({displayName: "Channels",
+	getInitialState: function () {
+		return {
+			channels: [
+				'Kiss FM',
+				'Top Hits',
+				'Solo Piano',
+				'Smooth jazz',
+				'Soft Rock',
+				'Hit FM',
+				'Vocal New Age',
+				'Hit 70s',
+				'Jazz Classics',
+				'Love Music',
+				'Movie Soundtracks',
+				'New Age',
+				'Pop Rock',
+				'RadioMozart',
+				'Roots Reggae',
+				'Rocky FM'
+			]
+		};
+	},
+
+	getChannels: function () {
+		return this.state.channels.map(function (channel) {
+			return (
+				React.createElement("div", {className: "item"}, 
+					React.createElement("div", {className: "right floated content"}, 
+						React.createElement("div", {className: "ui button"}, "Listen")
+					), 
+					React.createElement("i", {className: "large pied piper alternate middle aligned icon"}), 
+
+					React.createElement("div", {className: "content"}, 
+						channel
+					)
+				)
+			);
+		});
+	},
+
 	render: function () {
 		return (
 			React.createElement("div", {className: "ui container"}, 
 				React.createElement("div", {className: "ui segment"}, 
-					React.createElement("h1", null, "Browse Channels")
+					React.createElement("h1", null, "Browse Channels"), 
+
+					React.createElement("div", {className: "ui middle aligned divided list"}, 
+						this.getChannels()
+					)
 				)
 			)
 		);
