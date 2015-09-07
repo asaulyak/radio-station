@@ -13,7 +13,7 @@ var nodeEnv = nconf.get('NODE_ENV'),
 environment = nconf.get(environment) ? environment : 'development';
 
 var port = nconf.get(environment + ':port') || 1337,
-	ip = nconf.get(environment + ':ip') || '127.0.0.1';
+	ip = nconf.get(environment + ':ip') || '0.0.0.0';
 
 
 switch (environment) {
