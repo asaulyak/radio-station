@@ -18,9 +18,8 @@ var Channel = React.createClass({
 
 	getInitialState: function () {
 		return {
-			tracks: [
-				//'Three
-			]
+			tracks: [],
+			isLoading: false
 		};
 	},
 
@@ -47,12 +46,12 @@ var Channel = React.createClass({
 
 	onTrackSearchResponse: function (data) {
 		this.setState({
-			tracks: data.tracks
+			tracks: data.tracks,
+			isLoading: false
 		});
 	},
 
 	onChannelAddTracks: function (data) {
-
 		if (!data.error) {
 			Actions.stepMove(1);
 			$('#createChannel').hide();
@@ -61,14 +60,25 @@ var Channel = React.createClass({
 	},
 
 	onSearchChanged: function (event) {
+
+		// Hit enter
 		if (event.charCode === 13) {
 			Actions.searchTracks(event.target.value);
+
+			this.setState({
+				isLoading: true
+			});
 
 			event.preventDefault();
 		}
 	},
 
 	render: function () {
+		var searchBoxClassList = 'ui left icon input';
+		if (this.state.isLoading) {
+			searchBoxClassList += ' loading';
+		}
+
 		return (
 			<div className="ui raised very padded container segment">
 				<div id="createChannel">
@@ -94,17 +104,16 @@ var Channel = React.createClass({
 					<h1 className="ui header">Add tracks to channel</h1>
 
 					<div className="ui search focus">
-						<div className="ui left icon input">
-							<input onKeyPress={this.onSearchChanged.bind(this)} className="prompt" type="text" placeholder="Search Tracks" autocomplete="off"/>
+						<div className={searchBoxClassList}>
+							<input onKeyPress={this.onSearchChanged} className="prompt" type="text"
+								placeholder="Search Tracks" autoComplete="off"/>
 							<i className="pied piper alternate icon"></i>
 						</div>
-
 					</div>
 					<div className="ui container">
 						<div className="attached segment">
 							<h4 className="ui horizontal divider header">
 								<i className="music icon small"></i>
-								Search Results
 							</h4>
 
 							<div className="ui middle aligned divided list relaxed">
@@ -112,7 +121,6 @@ var Channel = React.createClass({
 							</div>
 						</div>
 					</div>
-
 				</div>
 				<Steps/>
 			</div>
