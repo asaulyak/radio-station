@@ -31,7 +31,7 @@ var Channels = React.createClass({
 					<div className="right floated content">
 						<div className="ui button">Listen</div>
 					</div>
-					<i className="large video play middle aligned icon"></i>
+					<i className="large unmute middle aligned icon"></i>
 
 					<div className="content">
 						<a className="header">{channel}</a>

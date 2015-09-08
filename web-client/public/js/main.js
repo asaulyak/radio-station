@@ -23423,7 +23423,7 @@ var Channels = React.createClass({displayName: "Channels",
 					React.createElement("div", {className: "right floated content"}, 
 						React.createElement("div", {className: "ui button"}, "Listen")
 					), 
-					React.createElement("i", {className: "large video play middle aligned icon"}), 
+					React.createElement("i", {className: "large unmute middle aligned icon"}), 
 
 					React.createElement("div", {className: "content"}, 
 						React.createElement("a", {className: "header"}, channel)
