@@ -10,7 +10,7 @@ module.exports = {
 	},
 	server: {
 		channel: {
-			CREATE_CHANNEL_RESPONSE: 'CREATE_CHANNEL_RESPONSE'
+			TRACK_SEARCH_RESPONSE: 'TRACK_SEARCH_RESPONSE'
 		}
 	}
 };

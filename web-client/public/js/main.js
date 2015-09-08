@@ -22979,6 +22979,13 @@ var AppActions = {
 			actionType: Constants.actionTypes.CREATE_CHANNEL,
 			channelName: channelName
 		});
+	},
+
+	searchTracks: function (query) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.TRACK_SEARCH,
+			query: query
+		});
 	}
 };
 
@@ -23205,6 +23212,7 @@ var Events = require('../../../constants/events');
 var Channel = React.createClass({displayName: "Channel",
 	componentWillMount: function () {
 		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks.bind(this));
+		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse.bind(this));
 	},
 
 	componentDidMount: function () {
@@ -23214,25 +23222,22 @@ var Channel = React.createClass({displayName: "Channel",
 	getInitialState: function () {
 		return {
 			tracks: [
-				'Three Days Grace - Time Of Dying',
-				'Serj Tankian - Empty Walls',
-				'Skillet - Rise',
-				'IAMX - You Can Be Happy'
+				//'Three
 			]
 		};
 	},
 
 	getTracks: function () {
-		return this.state.tracks.map(function (track) {
+		return this.state.tracks.map(function (track, index) {
 			return (
-				React.createElement("div", {className: "item", key: track}, 
+				React.createElement("div", {className: "item", key: index}, 
 					React.createElement("div", {className: "right floated content"}, 
 						React.createElement("div", {className: "ui button"}, "Add")
 					), 
 					React.createElement("i", {className: "large video play middle aligned icon"}), 
 
 					React.createElement("div", {className: "content"}, 
-						React.createElement("a", {className: "header"}, track)
+						React.createElement("a", {className: "header"}, track.title)
 					)
 				)
 			);
@@ -23243,11 +23248,26 @@ var Channel = React.createClass({displayName: "Channel",
 		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
 
+	onTrackSearchResponse: function (data) {
+		this.setState({
+			tracks: data.tracks
+		});
+	},
+
 	onChannelAddTracks: function (data) {
+
 		if (!data.error) {
 			Actions.stepMove(1);
 			$('#createChannel').hide();
 			$('#addTracks').show();
+		}
+	},
+
+	onSearchChanged: function (event) {
+		if (event.charCode === 13) {
+			Actions.searchTracks(event.target.value);
+
+			event.preventDefault();
 		}
 	},
 
@@ -23278,7 +23298,7 @@ var Channel = React.createClass({displayName: "Channel",
 
 					React.createElement("div", {className: "ui search focus"}, 
 						React.createElement("div", {className: "ui left icon input"}, 
-							React.createElement("input", {className: "prompt", type: "text", placeholder: "Search Tracks", autocomplete: "off"}), 
+							React.createElement("input", {onKeyPress: this.onSearchChanged.bind(this), className: "prompt", type: "text", placeholder: "Search Tracks", autocomplete: "off"}), 
 							React.createElement("i", {className: "pied piper alternate icon"})
 						)
 
@@ -23287,7 +23307,7 @@ var Channel = React.createClass({displayName: "Channel",
 						React.createElement("div", {className: "attached segment"}, 
 							React.createElement("h4", {className: "ui horizontal divider header"}, 
 								React.createElement("i", {className: "music icon small"}), 
-								'Search Results'
+								"Search Results"
 							), 
 
 							React.createElement("div", {className: "ui middle aligned divided list relaxed"}, 
@@ -23465,7 +23485,8 @@ module.exports = {
 	actionTypes: {
 		ROUTE_NAVIGATE: 'ROUTE_NAVIGATE',
 		STEP_MOVE: 'STEP_MOVE',
-		CREATE_CHANNEL: 'CREATE_CHANNEL'
+		CREATE_CHANNEL: 'CREATE_CHANNEL',
+		TRACK_SEARCH: 'TRACK_SEARCH'
 	}
 };
 
@@ -23482,7 +23503,7 @@ module.exports = {
 	},
 	server: {
 		channel: {
-			CREATE_CHANNEL_RESPONSE: 'CREATE_CHANNEL_RESPONSE'
+			TRACK_SEARCH_RESPONSE: 'TRACK_SEARCH_RESPONSE'
 		}
 	}
 };
@@ -23547,6 +23568,22 @@ var store = assign(EventEmitter.prototype, {
 							});
 					})
 				.fail(function (data) {
+						debugger;
+					});
+				break;
+
+			case Constants.actionTypes.TRACK_SEARCH:
+				$.ajax({
+					url: '/api/search/' + action.query,
+					method: 'GET'
+				})
+					.done(function (data) {
+						store.emit(Events.server.channel.TRACK_SEARCH_RESPONSE,
+							{
+								tracks: data
+							});
+					})
+					.fail(function (data) {
 						debugger;
 					});
 				break;

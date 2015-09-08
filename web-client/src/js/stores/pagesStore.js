@@ -28,6 +28,22 @@ var store = assign(EventEmitter.prototype, {
 						debugger;
 					});
 				break;
+
+			case Constants.actionTypes.TRACK_SEARCH:
+				$.ajax({
+					url: '/api/search/' + action.query,
+					method: 'GET'
+				})
+					.done(function (data) {
+						store.emit(Events.server.channel.TRACK_SEARCH_RESPONSE,
+							{
+								tracks: data
+							});
+					})
+					.fail(function (data) {
+						debugger;
+					});
+				break;
 		}
 
 		return true;

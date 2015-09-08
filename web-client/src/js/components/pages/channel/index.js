@@ -9,6 +9,7 @@ var Events = require('../../../constants/events');
 var Channel = React.createClass({
 	componentWillMount: function () {
 		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks.bind(this));
+		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse.bind(this));
 	},
 
 	componentDidMount: function () {
@@ -18,25 +19,22 @@ var Channel = React.createClass({
 	getInitialState: function () {
 		return {
 			tracks: [
-				'Three Days Grace - Time Of Dying',
-				'Serj Tankian - Empty Walls',
-				'Skillet - Rise',
-				'IAMX - You Can Be Happy'
+				//'Three
 			]
 		};
 	},
 
 	getTracks: function () {
-		return this.state.tracks.map(function (track) {
+		return this.state.tracks.map(function (track, index) {
 			return (
-				<div className="item" key={track}>
+				<div className="item" key={index}>
 					<div className="right floated content">
 						<div className="ui button">Add</div>
 					</div>
 					<i className="large video play middle aligned icon"></i>
 
 					<div className="content">
-						<a className="header">{track}</a>
+						<a className="header">{track.title}</a>
 					</div>
 				</div>
 			);
@@ -47,11 +45,26 @@ var Channel = React.createClass({
 		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
 
+	onTrackSearchResponse: function (data) {
+		this.setState({
+			tracks: data.tracks
+		});
+	},
+
 	onChannelAddTracks: function (data) {
+
 		if (!data.error) {
 			Actions.stepMove(1);
 			$('#createChannel').hide();
 			$('#addTracks').show();
+		}
+	},
+
+	onSearchChanged: function (event) {
+		if (event.charCode === 13) {
+			Actions.searchTracks(event.target.value);
+
+			event.preventDefault();
 		}
 	},
 
@@ -82,7 +95,7 @@ var Channel = React.createClass({
 
 					<div className="ui search focus">
 						<div className="ui left icon input">
-							<input className="prompt" type="text" placeholder="Search Tracks" autocomplete="off"/>
+							<input onKeyPress={this.onSearchChanged.bind(this)} className="prompt" type="text" placeholder="Search Tracks" autocomplete="off"/>
 							<i className="pied piper alternate icon"></i>
 						</div>
 
@@ -91,7 +104,7 @@ var Channel = React.createClass({
 						<div className="attached segment">
 							<h4 className="ui horizontal divider header">
 								<i className="music icon small"></i>
-								{'Search Results'}
+								Search Results
 							</h4>
 
 							<div className="ui middle aligned divided list relaxed">
