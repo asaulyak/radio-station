@@ -403,12 +403,11 @@ process.umask = function() { return 0; };
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-module.exports.Dispatcher = require('./lib/Dispatcher');
+module.exports.Dispatcher = require('./lib/Dispatcher')
 
 },{"./lib/Dispatcher":4}],4:[function(require,module,exports){
-(function (process){
-/**
- * Copyright (c) 2014-2015, Facebook, Inc.
+/*
+ * Copyright (c) 2014, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -416,18 +415,14 @@ module.exports.Dispatcher = require('./lib/Dispatcher');
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @providesModule Dispatcher
- * 
- * @preventMunge
+ * @typechecks
  */
 
-'use strict';
+"use strict";
 
-exports.__esModule = true;
+var invariant = require('./invariant');
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var invariant = require('fbjs/lib/invariant');
-
+var _lastID = 1;
 var _prefix = 'ID_';
 
 /**
@@ -477,7 +472,7 @@ var _prefix = 'ID_';
  *
  * This payload is digested by both stores:
  *
- *   CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
+ *    CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
  *     if (payload.actionType === 'country-update') {
  *       CountryStore.country = payload.selectedCountry;
  *     }
@@ -505,10 +500,14 @@ var _prefix = 'ID_';
  *     flightDispatcher.register(function(payload) {
  *       switch (payload.actionType) {
  *         case 'country-update':
- *         case 'city-update':
  *           flightDispatcher.waitFor([CityStore.dispatchToken]);
  *           FlightPriceStore.price =
  *             getFlightPriceStore(CountryStore.country, CityStore.city);
+ *           break;
+ *
+ *         case 'city-update':
+ *           FlightPriceStore.price =
+ *             FlightPriceStore(CountryStore.country, CityStore.city);
  *           break;
  *     }
  *   });
@@ -518,109 +517,131 @@ var _prefix = 'ID_';
  * `FlightPriceStore`.
  */
 
-var Dispatcher = (function () {
   function Dispatcher() {
-    _classCallCheck(this, Dispatcher);
-
-    this._callbacks = {};
-    this._isDispatching = false;
-    this._isHandled = {};
-    this._isPending = {};
-    this._lastID = 1;
+    this.$Dispatcher_callbacks = {};
+    this.$Dispatcher_isPending = {};
+    this.$Dispatcher_isHandled = {};
+    this.$Dispatcher_isDispatching = false;
+    this.$Dispatcher_pendingPayload = null;
   }
 
   /**
    * Registers a callback to be invoked with every dispatched payload. Returns
    * a token that can be used with `waitFor()`.
+   *
+   * @param {function} callback
+   * @return {string}
    */
-
-  Dispatcher.prototype.register = function register(callback) {
-    var id = _prefix + this._lastID++;
-    this._callbacks[id] = callback;
+  Dispatcher.prototype.register=function(callback) {
+    var id = _prefix + _lastID++;
+    this.$Dispatcher_callbacks[id] = callback;
     return id;
   };
 
   /**
    * Removes a callback based on its token.
+   *
+   * @param {string} id
    */
-
-  Dispatcher.prototype.unregister = function unregister(id) {
-    !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.unregister(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
-    delete this._callbacks[id];
+  Dispatcher.prototype.unregister=function(id) {
+    invariant(
+      this.$Dispatcher_callbacks[id],
+      'Dispatcher.unregister(...): `%s` does not map to a registered callback.',
+      id
+    );
+    delete this.$Dispatcher_callbacks[id];
   };
 
   /**
    * Waits for the callbacks specified to be invoked before continuing execution
    * of the current callback. This method should only be used by a callback in
    * response to a dispatched payload.
+   *
+   * @param {array<string>} ids
    */
-
-  Dispatcher.prototype.waitFor = function waitFor(ids) {
-    !this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Must be invoked while dispatching.') : invariant(false) : undefined;
+  Dispatcher.prototype.waitFor=function(ids) {
+    invariant(
+      this.$Dispatcher_isDispatching,
+      'Dispatcher.waitFor(...): Must be invoked while dispatching.'
+    );
     for (var ii = 0; ii < ids.length; ii++) {
       var id = ids[ii];
-      if (this._isPending[id]) {
-        !this._isHandled[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `%s`.', id) : invariant(false) : undefined;
+      if (this.$Dispatcher_isPending[id]) {
+        invariant(
+          this.$Dispatcher_isHandled[id],
+          'Dispatcher.waitFor(...): Circular dependency detected while ' +
+          'waiting for `%s`.',
+          id
+        );
         continue;
       }
-      !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
-      this._invokeCallback(id);
+      invariant(
+        this.$Dispatcher_callbacks[id],
+        'Dispatcher.waitFor(...): `%s` does not map to a registered callback.',
+        id
+      );
+      this.$Dispatcher_invokeCallback(id);
     }
   };
 
   /**
    * Dispatches a payload to all registered callbacks.
+   *
+   * @param {object} payload
    */
-
-  Dispatcher.prototype.dispatch = function dispatch(payload) {
-    !!this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.') : invariant(false) : undefined;
-    this._startDispatching(payload);
+  Dispatcher.prototype.dispatch=function(payload) {
+    invariant(
+      !this.$Dispatcher_isDispatching,
+      'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.'
+    );
+    this.$Dispatcher_startDispatching(payload);
     try {
-      for (var id in this._callbacks) {
-        if (this._isPending[id]) {
+      for (var id in this.$Dispatcher_callbacks) {
+        if (this.$Dispatcher_isPending[id]) {
           continue;
         }
-        this._invokeCallback(id);
+        this.$Dispatcher_invokeCallback(id);
       }
     } finally {
-      this._stopDispatching();
+      this.$Dispatcher_stopDispatching();
     }
   };
 
   /**
    * Is this Dispatcher currently dispatching.
+   *
+   * @return {boolean}
    */
-
-  Dispatcher.prototype.isDispatching = function isDispatching() {
-    return this._isDispatching;
+  Dispatcher.prototype.isDispatching=function() {
+    return this.$Dispatcher_isDispatching;
   };
 
   /**
    * Call the callback stored with the given id. Also do some internal
    * bookkeeping.
    *
+   * @param {string} id
    * @internal
    */
-
-  Dispatcher.prototype._invokeCallback = function _invokeCallback(id) {
-    this._isPending[id] = true;
-    this._callbacks[id](this._pendingPayload);
-    this._isHandled[id] = true;
+  Dispatcher.prototype.$Dispatcher_invokeCallback=function(id) {
+    this.$Dispatcher_isPending[id] = true;
+    this.$Dispatcher_callbacks[id](this.$Dispatcher_pendingPayload);
+    this.$Dispatcher_isHandled[id] = true;
   };
 
   /**
    * Set up bookkeeping needed when dispatching.
    *
+   * @param {object} payload
    * @internal
    */
-
-  Dispatcher.prototype._startDispatching = function _startDispatching(payload) {
-    for (var id in this._callbacks) {
-      this._isPending[id] = false;
-      this._isHandled[id] = false;
+  Dispatcher.prototype.$Dispatcher_startDispatching=function(payload) {
+    for (var id in this.$Dispatcher_callbacks) {
+      this.$Dispatcher_isPending[id] = false;
+      this.$Dispatcher_isHandled[id] = false;
     }
-    this._pendingPayload = payload;
-    this._isDispatching = true;
+    this.$Dispatcher_pendingPayload = payload;
+    this.$Dispatcher_isDispatching = true;
   };
 
   /**
@@ -628,21 +649,17 @@ var Dispatcher = (function () {
    *
    * @internal
    */
-
-  Dispatcher.prototype._stopDispatching = function _stopDispatching() {
-    delete this._pendingPayload;
-    this._isDispatching = false;
+  Dispatcher.prototype.$Dispatcher_stopDispatching=function() {
+    this.$Dispatcher_pendingPayload = null;
+    this.$Dispatcher_isDispatching = false;
   };
 
-  return Dispatcher;
-})();
 
 module.exports = Dispatcher;
-}).call(this,require('_process'))
-},{"_process":2,"fbjs/lib/invariant":5}],5:[function(require,module,exports){
-(function (process){
+
+},{"./invariant":5}],5:[function(require,module,exports){
 /**
- * Copyright 2013-2015, Facebook, Inc.
+ * Copyright (c) 2014, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -665,8 +682,8 @@ module.exports = Dispatcher;
  * will remain to ensure logic does not differ in production.
  */
 
-var invariant = function (condition, format, a, b, c, d, e, f) {
-  if (process.env.NODE_ENV !== 'production') {
+var invariant = function(condition, format, a, b, c, d, e, f) {
+  if (false) {
     if (format === undefined) {
       throw new Error('invariant requires an error message argument');
     }
@@ -675,13 +692,17 @@ var invariant = function (condition, format, a, b, c, d, e, f) {
   if (!condition) {
     var error;
     if (format === undefined) {
-      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
+      error = new Error(
+        'Minified exception occurred; use the non-minified dev environment ' +
+        'for the full error message and additional helpful warnings.'
+      );
     } else {
       var args = [a, b, c, d, e, f];
       var argIndex = 0;
-      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
-        return args[argIndex++];
-      }));
+      error = new Error(
+        'Invariant Violation: ' +
+        format.replace(/%s/g, function() { return args[argIndex++]; })
+      );
     }
 
     error.framesToPop = 1; // we don't care about invariant's own frame
@@ -690,8 +711,8 @@ var invariant = function (condition, format, a, b, c, d, e, f) {
 };
 
 module.exports = invariant;
-}).call(this,require('_process'))
-},{"_process":2}],6:[function(require,module,exports){
+
+},{}],6:[function(require,module,exports){
 "use strict";
 
 /**
@@ -22946,13 +22967,6 @@ var Constants = require('../../constants/app-constants');
 var Dispatcher = require('../../dispatchers/app-dispatcher');
 
 var AppActions = {
-	stepMove: function (step) {
-		Dispatcher.dispatch({
-			actionType: Constants.actionTypes.STEP_MOVE,
-			step: step
-		});
-	},
-
 	createChannel: function (channelName) {
 		Dispatcher.dispatch({
 			actionType: Constants.actionTypes.CREATE_CHANNEL,
@@ -23201,6 +23215,7 @@ var Channel = React.createClass({displayName: "Channel",
 	getInitialState: function () {
 		return {
 			tracks: [],
+			currentStep: 0,
 			isLoading: false
 		};
 	},
@@ -23222,6 +23237,29 @@ var Channel = React.createClass({displayName: "Channel",
 		});
 	},
 
+	getSteps: function () {
+		return [
+			{
+				id: 'chooseName',
+				displayName: 'Choose Name',
+				description: 'Choose your channel\'s name',
+				icon: 'write'
+			},
+			{
+				id: 'addTracks',
+				displayName: 'Add tracks',
+				description: 'Fill your channel with tracks',
+				icon: 'music'
+			},
+			{
+				id: 'startChannel',
+				displayName: 'Start channel',
+				description: 'Start broadcasting',
+				icon: 'announcement'
+			}
+		];
+	},
+
 	onCreateChannelButtonClick: function () {
 		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
@@ -23235,7 +23273,10 @@ var Channel = React.createClass({displayName: "Channel",
 
 	onChannelAddTracks: function (data) {
 		if (!data.error) {
-			Actions.stepMove(1);
+			this.setState({
+				currentStep: 1
+			});
+			//Actions.stepMove(1);
 			$('#createChannel').hide();
 			$('#addTracks').show();
 		}
@@ -23304,7 +23345,7 @@ var Channel = React.createClass({displayName: "Channel",
 						)
 					)
 				), 
-				React.createElement(Steps, null)
+				React.createElement(Steps, {steps: this.getSteps(), currentStep: this.state.currentStep})
 			)
 		);
 	}
@@ -23327,43 +23368,16 @@ module.exports = React.createClass({displayName: "exports",
 
 	getInitialState: function () {
 		return {
-			step: 0
+			step: this.props.currentStep
 		};
 	},
 
-	componentWillMount: function () {
-		pagesStore.on(Events.pages.channel.STEP_MOVE, function (e) {
-			this.setState({
-				step: e.step
-			});
-		}.bind(this));
-	},
-
 	getSteps: function () {
-		var steps = [
-			{
-				id: 'chooseName',
-				displayName: 'Choose Name',
-				description: 'Choose your channel\'s name',
-				icon: 'write'
-			},
-			{
-				id: 'addTracks',
-				displayName: 'Add tracks',
-				description: 'Fill your channel with tracks',
-				icon: 'music'
-			},
-			{
-				id: 'startChannel',
-				displayName: 'Start channel',
-				description: 'Start broadcasting',
-				icon: 'announcement'
-			}
-		];
+		var steps = this.props.steps || [];
 
 		return steps.map(function (step) {
 			return (
-				React.createElement("div", {key: step.id, className: (step.id === this.steps[this.state.step] ? 'active' : '') + ' step'}, 
+				React.createElement("div", {key: step.id, className: (step.id === this.steps[this.props.currentStep] ? 'active' : '') + ' step'}, 
 					React.createElement("i", {className: step.icon + ' icon'}), 
 
 					React.createElement("div", {className: "content"}, 
@@ -23380,7 +23394,7 @@ module.exports = React.createClass({displayName: "exports",
 
 		return (
 			React.createElement("div", {className: "ui container"}, 
-				React.createElement("div", {className: "ui horizontal divider"}, "Step ", this.state.step + 1, " out of 3"), 
+				React.createElement("div", {className: "ui horizontal divider"}, "Step ", this.props.currentStep + 1, " out of ", this.props.steps.length), 
 				React.createElement("div", {className: "ui steps attached"}, 
 					steps
 				)
@@ -23471,7 +23485,6 @@ module.exports = Home;
 module.exports = {
 	actionTypes: {
 		ROUTE_NAVIGATE: 'ROUTE_NAVIGATE',
-		STEP_MOVE: 'STEP_MOVE',
 		CREATE_CHANNEL: 'CREATE_CHANNEL',
 		TRACK_SEARCH: 'TRACK_SEARCH'
 	}
@@ -23484,7 +23497,6 @@ module.exports = {
 	},
 	pages: {
 		channel: {
-			STEP_MOVE: 'STEP_MOVE',
 			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS'
 		}
 	},
@@ -23537,12 +23549,6 @@ var EventEmitter = require('events').EventEmitter;
 var store = assign(EventEmitter.prototype, {
 	dispatcherIndex: AppDispatcher.register(function (action) {
 		switch (action.actionType) {
-			case Constants.actionTypes.STEP_MOVE:
-				store.emit(Events.pages.channel.STEP_MOVE, {
-					step: action.step
-				});
-				break;
-
 			case Constants.actionTypes.CREATE_CHANNEL:
 				$.ajax({
 					url: '/api/channel/create/' + action.channelName,

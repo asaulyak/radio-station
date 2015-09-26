@@ -19,6 +19,7 @@ var Channel = React.createClass({
 	getInitialState: function () {
 		return {
 			tracks: [],
+			currentStep: 0,
 			isLoading: false
 		};
 	},
@@ -40,6 +41,29 @@ var Channel = React.createClass({
 		});
 	},
 
+	getSteps: function () {
+		return [
+			{
+				id: 'chooseName',
+				displayName: 'Choose Name',
+				description: 'Choose your channel\'s name',
+				icon: 'write'
+			},
+			{
+				id: 'addTracks',
+				displayName: 'Add tracks',
+				description: 'Fill your channel with tracks',
+				icon: 'music'
+			},
+			{
+				id: 'startChannel',
+				displayName: 'Start channel',
+				description: 'Start broadcasting',
+				icon: 'announcement'
+			}
+		];
+	},
+
 	onCreateChannelButtonClick: function () {
 		Actions.createChannel(this.refs.channelName.getDOMNode().value);
 	},
@@ -53,7 +77,10 @@ var Channel = React.createClass({
 
 	onChannelAddTracks: function (data) {
 		if (!data.error) {
-			Actions.stepMove(1);
+			this.setState({
+				currentStep: 1
+			});
+			//Actions.stepMove(1);
 			$('#createChannel').hide();
 			$('#addTracks').show();
 		}
@@ -122,7 +149,7 @@ var Channel = React.createClass({
 						</div>
 					</div>
 				</div>
-				<Steps/>
+				<Steps steps={this.getSteps()} currentStep={this.state.currentStep}/>
 			</div>
 		);
 	}

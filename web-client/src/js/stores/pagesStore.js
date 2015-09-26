@@ -7,12 +7,6 @@ var EventEmitter = require('events').EventEmitter;
 var store = assign(EventEmitter.prototype, {
 	dispatcherIndex: AppDispatcher.register(function (action) {
 		switch (action.actionType) {
-			case Constants.actionTypes.STEP_MOVE:
-				store.emit(Events.pages.channel.STEP_MOVE, {
-					step: action.step
-				});
-				break;
-
 			case Constants.actionTypes.CREATE_CHANNEL:
 				$.ajax({
 					url: '/api/channel/create/' + action.channelName,
