@@ -3,6 +3,7 @@ var Events = require('../constants/events');
 var assign = require('react/lib/Object.assign');
 var Constants = require('../constants/app-constants');
 var EventEmitter = require('events').EventEmitter;
+var $ = require('jquery');
 
 var store = assign(EventEmitter.prototype, {
 	dispatcherIndex: AppDispatcher.register(function (action) {
@@ -18,7 +19,7 @@ var store = assign(EventEmitter.prototype, {
 								channelId: data.uid
 							});
 					})
-				.fail(function (data) {
+					.fail(function (data) {
 						debugger;
 					});
 				break;

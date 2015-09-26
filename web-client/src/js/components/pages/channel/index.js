@@ -5,6 +5,7 @@ var Constants = require('../../../constants/app-constants');
 var Actions = require('../../../actions/pageActions/channelActions');
 var Store = require('../../../stores/pagesStore');
 var Events = require('../../../constants/events');
+var $ = require('jquery');
 
 var Channel = React.createClass({
 	componentWillMount: function () {

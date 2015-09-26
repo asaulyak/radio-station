@@ -34,6 +34,7 @@
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.3.4",
+    "jquery": "^2.1.4",
     "jshint": "^2.5.11",
     "map-stream": "0.0.6",
     "nconf": "^0.6.9",
