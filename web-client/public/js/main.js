@@ -32438,7 +32438,7 @@ var Channel = React.createClass({displayName: "Channel",
 			return (
 				React.createElement("div", {className: "item", key: index}, 
 					React.createElement("div", {className: "right floated content"}, 
-						React.createElement("div", {className: "ui button"}, "Add")
+						React.createElement("div", {className: "ui button positive"}, "Add")
 					), 
 					React.createElement("i", {className: "large video play middle aligned icon"}), 
 
@@ -32489,7 +32489,7 @@ var Channel = React.createClass({displayName: "Channel",
 			this.setState({
 				currentStep: 1
 			});
-			//Actions.stepMove(1);
+
 			$('#createChannel').hide();
 			$('#addTracks').show();
 		}

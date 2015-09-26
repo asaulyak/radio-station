@@ -30,7 +30,7 @@ var Channel = React.createClass({
 			return (
 				<div className="item" key={index}>
 					<div className="right floated content">
-						<div className="ui button">Add</div>
+						<div className="ui button positive">Add</div>
 					</div>
 					<i className="large video play middle aligned icon"></i>
 
@@ -81,7 +81,7 @@ var Channel = React.createClass({
 			this.setState({
 				currentStep: 1
 			});
-			//Actions.stepMove(1);
+
 			$('#createChannel').hide();
 			$('#addTracks').show();
 		}
