@@ -9,8 +9,9 @@ var $ = require('jquery');
 
 var Channel = React.createClass({
 	componentWillMount: function () {
-		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks.bind(this));
-		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse.bind(this));
+		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks);
+		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse);
+		Store.on(Events.pages.channel.TRACK_ADDED_TO_CHANNEL, this.onTrackAddedToChannel);
 	},
 
 	componentDidMount: function () {
@@ -21,16 +22,24 @@ var Channel = React.createClass({
 		return {
 			tracks: [],
 			currentStep: 0,
+			channelId: null,
 			isLoading: false
 		};
 	},
 
 	getTracks: function () {
+		var self = this;
+
 		return this.state.tracks.map(function (track, index) {
+			var buttonState = track.isAdded ? 'check' : 'add';
+			var buttonIconClassName = buttonState + ' circle icon';
 			return (
 				<div className="item" key={index}>
 					<div className="right floated content">
-						<div className="ui button positive">Add</div>
+						<button className="ui button" onClick={self.onAddButtonClick.bind(self, track)}>
+							<i className={buttonIconClassName}></i>
+							Add
+						</button>
 					</div>
 					<i className="large video play middle aligned icon"></i>
 
@@ -76,10 +85,23 @@ var Channel = React.createClass({
 		});
 	},
 
+	onTrackAddedToChannel: function (data) {
+		if (!data.error) {
+			this.setState({
+				//currentStep: 2,
+				//channelId: data.channelId
+			});
+
+			//$('#createChannel').hide();
+			//$('#addTracks').show();
+		}
+	},
+
 	onChannelAddTracks: function (data) {
 		if (!data.error) {
 			this.setState({
-				currentStep: 1
+				currentStep: 1,
+				channelId: data.channelId
 			});
 
 			$('#createChannel').hide();
@@ -100,6 +122,15 @@ var Channel = React.createClass({
 			event.preventDefault();
 		}
 	},
+
+	onAddButtonClick: function (track) {
+		track.isAdded = true;
+		Actions.addTrackToChannel({
+			track: track,
+			channelId: this.state.channelId
+		});
+	},
+
 
 	render: function () {
 		var searchBoxClassList = 'ui left icon input';
@@ -134,7 +165,7 @@ var Channel = React.createClass({
 					<div className="ui search focus">
 						<div className={searchBoxClassList}>
 							<input onKeyPress={this.onSearchChanged} className="prompt" type="text"
-								placeholder="Search Tracks" autoComplete="off"/>
+							       placeholder="Search Tracks" autoComplete="off"/>
 							<i className="pied piper alternate icon"></i>
 						</div>
 					</div>

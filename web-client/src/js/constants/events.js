@@ -4,7 +4,8 @@ module.exports = {
 	},
 	pages: {
 		channel: {
-			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS'
+			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS',
+			TRACK_ADDED_TO_CHANNEL: 'TRACK_ADDED_TO_CHANNEL'
 		}
 	},
 	server: {

@@ -1,7 +1,4 @@
 var React = require('react');
-var channelActions = require('../../../actions/pageActions/channelActions');
-var Events = require('../../../constants/events');
-var pagesStore = require('../../../stores/pagesStore');
 
 module.exports = React.createClass({
 	steps: [
@@ -15,6 +12,7 @@ module.exports = React.createClass({
 			step: this.props.currentStep
 		};
 	},
+
 
 	getSteps: function () {
 		var steps = this.props.steps || [];
@@ -34,13 +32,11 @@ module.exports = React.createClass({
 	},
 
 	render: function () {
-		var steps = this.getSteps();
-
 		return (
 			<div className="ui container">
 				<div className="ui horizontal divider">Step {this.props.currentStep + 1} out of {this.props.steps.length}</div>
 				<div className="ui steps attached">
-					{steps}
+					{this.getSteps()}
 				</div>
 			</div>
 		);

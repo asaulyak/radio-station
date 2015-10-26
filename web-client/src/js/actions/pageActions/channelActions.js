@@ -14,6 +14,14 @@ var AppActions = {
 			actionType: Constants.actionTypes.TRACK_SEARCH,
 			query: query
 		});
+	},
+
+	addTrackToChannel: function (data) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.ADD_TRACK_TO_CHANNEL,
+			track: data.track,
+			channelId: data.channelId
+		});
 	}
 };
 

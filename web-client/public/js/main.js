@@ -403,11 +403,12 @@ process.umask = function() { return 0; };
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-module.exports.Dispatcher = require('./lib/Dispatcher')
+module.exports.Dispatcher = require('./lib/Dispatcher');
 
 },{"./lib/Dispatcher":4}],4:[function(require,module,exports){
-/*
- * Copyright (c) 2014, Facebook, Inc.
+(function (process){
+/**
+ * Copyright (c) 2014-2015, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -415,14 +416,18 @@ module.exports.Dispatcher = require('./lib/Dispatcher')
  * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @providesModule Dispatcher
- * @typechecks
+ * 
+ * @preventMunge
  */
 
-"use strict";
+'use strict';
 
-var invariant = require('./invariant');
+exports.__esModule = true;
 
-var _lastID = 1;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var invariant = require('fbjs/lib/invariant');
+
 var _prefix = 'ID_';
 
 /**
@@ -472,7 +477,7 @@ var _prefix = 'ID_';
  *
  * This payload is digested by both stores:
  *
- *    CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
+ *   CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
  *     if (payload.actionType === 'country-update') {
  *       CountryStore.country = payload.selectedCountry;
  *     }
@@ -500,14 +505,10 @@ var _prefix = 'ID_';
  *     flightDispatcher.register(function(payload) {
  *       switch (payload.actionType) {
  *         case 'country-update':
+ *         case 'city-update':
  *           flightDispatcher.waitFor([CityStore.dispatchToken]);
  *           FlightPriceStore.price =
  *             getFlightPriceStore(CountryStore.country, CityStore.city);
- *           break;
- *
- *         case 'city-update':
- *           FlightPriceStore.price =
- *             FlightPriceStore(CountryStore.country, CityStore.city);
  *           break;
  *     }
  *   });
@@ -517,131 +518,109 @@ var _prefix = 'ID_';
  * `FlightPriceStore`.
  */
 
+var Dispatcher = (function () {
   function Dispatcher() {
-    this.$Dispatcher_callbacks = {};
-    this.$Dispatcher_isPending = {};
-    this.$Dispatcher_isHandled = {};
-    this.$Dispatcher_isDispatching = false;
-    this.$Dispatcher_pendingPayload = null;
+    _classCallCheck(this, Dispatcher);
+
+    this._callbacks = {};
+    this._isDispatching = false;
+    this._isHandled = {};
+    this._isPending = {};
+    this._lastID = 1;
   }
 
   /**
    * Registers a callback to be invoked with every dispatched payload. Returns
    * a token that can be used with `waitFor()`.
-   *
-   * @param {function} callback
-   * @return {string}
    */
-  Dispatcher.prototype.register=function(callback) {
-    var id = _prefix + _lastID++;
-    this.$Dispatcher_callbacks[id] = callback;
+
+  Dispatcher.prototype.register = function register(callback) {
+    var id = _prefix + this._lastID++;
+    this._callbacks[id] = callback;
     return id;
   };
 
   /**
    * Removes a callback based on its token.
-   *
-   * @param {string} id
    */
-  Dispatcher.prototype.unregister=function(id) {
-    invariant(
-      this.$Dispatcher_callbacks[id],
-      'Dispatcher.unregister(...): `%s` does not map to a registered callback.',
-      id
-    );
-    delete this.$Dispatcher_callbacks[id];
+
+  Dispatcher.prototype.unregister = function unregister(id) {
+    !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.unregister(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
+    delete this._callbacks[id];
   };
 
   /**
    * Waits for the callbacks specified to be invoked before continuing execution
    * of the current callback. This method should only be used by a callback in
    * response to a dispatched payload.
-   *
-   * @param {array<string>} ids
    */
-  Dispatcher.prototype.waitFor=function(ids) {
-    invariant(
-      this.$Dispatcher_isDispatching,
-      'Dispatcher.waitFor(...): Must be invoked while dispatching.'
-    );
+
+  Dispatcher.prototype.waitFor = function waitFor(ids) {
+    !this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Must be invoked while dispatching.') : invariant(false) : undefined;
     for (var ii = 0; ii < ids.length; ii++) {
       var id = ids[ii];
-      if (this.$Dispatcher_isPending[id]) {
-        invariant(
-          this.$Dispatcher_isHandled[id],
-          'Dispatcher.waitFor(...): Circular dependency detected while ' +
-          'waiting for `%s`.',
-          id
-        );
+      if (this._isPending[id]) {
+        !this._isHandled[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `%s`.', id) : invariant(false) : undefined;
         continue;
       }
-      invariant(
-        this.$Dispatcher_callbacks[id],
-        'Dispatcher.waitFor(...): `%s` does not map to a registered callback.',
-        id
-      );
-      this.$Dispatcher_invokeCallback(id);
+      !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
+      this._invokeCallback(id);
     }
   };
 
   /**
    * Dispatches a payload to all registered callbacks.
-   *
-   * @param {object} payload
    */
-  Dispatcher.prototype.dispatch=function(payload) {
-    invariant(
-      !this.$Dispatcher_isDispatching,
-      'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.'
-    );
-    this.$Dispatcher_startDispatching(payload);
+
+  Dispatcher.prototype.dispatch = function dispatch(payload) {
+    !!this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.') : invariant(false) : undefined;
+    this._startDispatching(payload);
     try {
-      for (var id in this.$Dispatcher_callbacks) {
-        if (this.$Dispatcher_isPending[id]) {
+      for (var id in this._callbacks) {
+        if (this._isPending[id]) {
           continue;
         }
-        this.$Dispatcher_invokeCallback(id);
+        this._invokeCallback(id);
       }
     } finally {
-      this.$Dispatcher_stopDispatching();
+      this._stopDispatching();
     }
   };
 
   /**
    * Is this Dispatcher currently dispatching.
-   *
-   * @return {boolean}
    */
-  Dispatcher.prototype.isDispatching=function() {
-    return this.$Dispatcher_isDispatching;
+
+  Dispatcher.prototype.isDispatching = function isDispatching() {
+    return this._isDispatching;
   };
 
   /**
    * Call the callback stored with the given id. Also do some internal
    * bookkeeping.
    *
-   * @param {string} id
    * @internal
    */
-  Dispatcher.prototype.$Dispatcher_invokeCallback=function(id) {
-    this.$Dispatcher_isPending[id] = true;
-    this.$Dispatcher_callbacks[id](this.$Dispatcher_pendingPayload);
-    this.$Dispatcher_isHandled[id] = true;
+
+  Dispatcher.prototype._invokeCallback = function _invokeCallback(id) {
+    this._isPending[id] = true;
+    this._callbacks[id](this._pendingPayload);
+    this._isHandled[id] = true;
   };
 
   /**
    * Set up bookkeeping needed when dispatching.
    *
-   * @param {object} payload
    * @internal
    */
-  Dispatcher.prototype.$Dispatcher_startDispatching=function(payload) {
-    for (var id in this.$Dispatcher_callbacks) {
-      this.$Dispatcher_isPending[id] = false;
-      this.$Dispatcher_isHandled[id] = false;
+
+  Dispatcher.prototype._startDispatching = function _startDispatching(payload) {
+    for (var id in this._callbacks) {
+      this._isPending[id] = false;
+      this._isHandled[id] = false;
     }
-    this.$Dispatcher_pendingPayload = payload;
-    this.$Dispatcher_isDispatching = true;
+    this._pendingPayload = payload;
+    this._isDispatching = true;
   };
 
   /**
@@ -649,17 +628,21 @@ var _prefix = 'ID_';
    *
    * @internal
    */
-  Dispatcher.prototype.$Dispatcher_stopDispatching=function() {
-    this.$Dispatcher_pendingPayload = null;
-    this.$Dispatcher_isDispatching = false;
+
+  Dispatcher.prototype._stopDispatching = function _stopDispatching() {
+    delete this._pendingPayload;
+    this._isDispatching = false;
   };
 
+  return Dispatcher;
+})();
 
 module.exports = Dispatcher;
-
-},{"./invariant":5}],5:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"_process":2,"fbjs/lib/invariant":5}],5:[function(require,module,exports){
+(function (process){
 /**
- * Copyright (c) 2014, Facebook, Inc.
+ * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -682,8 +665,8 @@ module.exports = Dispatcher;
  * will remain to ensure logic does not differ in production.
  */
 
-var invariant = function(condition, format, a, b, c, d, e, f) {
-  if (false) {
+var invariant = function (condition, format, a, b, c, d, e, f) {
+  if (process.env.NODE_ENV !== 'production') {
     if (format === undefined) {
       throw new Error('invariant requires an error message argument');
     }
@@ -692,17 +675,13 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
   if (!condition) {
     var error;
     if (format === undefined) {
-      error = new Error(
-        'Minified exception occurred; use the non-minified dev environment ' +
-        'for the full error message and additional helpful warnings.'
-      );
+      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
     } else {
       var args = [a, b, c, d, e, f];
       var argIndex = 0;
-      error = new Error(
-        'Invariant Violation: ' +
-        format.replace(/%s/g, function() { return args[argIndex++]; })
-      );
+      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
+        return args[argIndex++];
+      }));
     }
 
     error.framesToPop = 1; // we don't care about invariant's own frame
@@ -711,8 +690,8 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 };
 
 module.exports = invariant;
-
-},{}],6:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"_process":2}],6:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.4
  * http://jquery.com/
@@ -32191,6 +32170,14 @@ var AppActions = {
 			actionType: Constants.actionTypes.TRACK_SEARCH,
 			query: query
 		});
+	},
+
+	addTrackToChannel: function (data) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.ADD_TRACK_TO_CHANNEL,
+			track: data.track,
+			channelId: data.channelId
+		});
 	}
 };
 
@@ -32417,8 +32404,9 @@ var $ = require('jquery');
 
 var Channel = React.createClass({displayName: "Channel",
 	componentWillMount: function () {
-		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks.bind(this));
-		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse.bind(this));
+		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks);
+		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse);
+		Store.on(Events.pages.channel.TRACK_ADDED_TO_CHANNEL, this.onTrackAddedToChannel);
 	},
 
 	componentDidMount: function () {
@@ -32429,16 +32417,24 @@ var Channel = React.createClass({displayName: "Channel",
 		return {
 			tracks: [],
 			currentStep: 0,
+			channelId: null,
 			isLoading: false
 		};
 	},
 
 	getTracks: function () {
+		var self = this;
+
 		return this.state.tracks.map(function (track, index) {
+			var buttonState = track.isAdded ? 'check' : 'add';
+			var buttonIconClassName = buttonState + ' circle icon';
 			return (
 				React.createElement("div", {className: "item", key: index}, 
 					React.createElement("div", {className: "right floated content"}, 
-						React.createElement("div", {className: "ui button positive"}, "Add")
+						React.createElement("button", {className: "ui button", onClick: self.onAddButtonClick.bind(self, track)}, 
+							React.createElement("i", {className: buttonIconClassName}), 
+							"Add"
+						)
 					), 
 					React.createElement("i", {className: "large video play middle aligned icon"}), 
 
@@ -32484,10 +32480,23 @@ var Channel = React.createClass({displayName: "Channel",
 		});
 	},
 
+	onTrackAddedToChannel: function (data) {
+		if (!data.error) {
+			this.setState({
+				//currentStep: 2,
+				//channelId: data.channelId
+			});
+
+			//$('#createChannel').hide();
+			//$('#addTracks').show();
+		}
+	},
+
 	onChannelAddTracks: function (data) {
 		if (!data.error) {
 			this.setState({
-				currentStep: 1
+				currentStep: 1,
+				channelId: data.channelId
 			});
 
 			$('#createChannel').hide();
@@ -32508,6 +32517,15 @@ var Channel = React.createClass({displayName: "Channel",
 			event.preventDefault();
 		}
 	},
+
+	onAddButtonClick: function (track) {
+		track.isAdded = true;
+		Actions.addTrackToChannel({
+			track: track,
+			channelId: this.state.channelId
+		});
+	},
+
 
 	render: function () {
 		var searchBoxClassList = 'ui left icon input';
@@ -32542,7 +32560,7 @@ var Channel = React.createClass({displayName: "Channel",
 					React.createElement("div", {className: "ui search focus"}, 
 						React.createElement("div", {className: searchBoxClassList}, 
 							React.createElement("input", {onKeyPress: this.onSearchChanged, className: "prompt", type: "text", 
-								placeholder: "Search Tracks", autoComplete: "off"}), 
+							       placeholder: "Search Tracks", autoComplete: "off"}), 
 							React.createElement("i", {className: "pied piper alternate icon"})
 						)
 					), 
@@ -32568,9 +32586,6 @@ module.exports = Channel;
 
 },{"../../../actions/pageActions/channelActions":194,"../../../constants/app-constants":206,"../../../constants/events":207,"../../../dispatchers/app-dispatcher":208,"../../../stores/pagesStore":211,"./steps":203,"jquery":6,"react":193}],203:[function(require,module,exports){
 var React = require('react');
-var channelActions = require('../../../actions/pageActions/channelActions');
-var Events = require('../../../constants/events');
-var pagesStore = require('../../../stores/pagesStore');
 
 module.exports = React.createClass({displayName: "exports",
 	steps: [
@@ -32584,6 +32599,7 @@ module.exports = React.createClass({displayName: "exports",
 			step: this.props.currentStep
 		};
 	},
+
 
 	getSteps: function () {
 		var steps = this.props.steps || [];
@@ -32603,20 +32619,18 @@ module.exports = React.createClass({displayName: "exports",
 	},
 
 	render: function () {
-		var steps = this.getSteps();
-
 		return (
 			React.createElement("div", {className: "ui container"}, 
 				React.createElement("div", {className: "ui horizontal divider"}, "Step ", this.props.currentStep + 1, " out of ", this.props.steps.length), 
 				React.createElement("div", {className: "ui steps attached"}, 
-					steps
+					this.getSteps()
 				)
 			)
 		);
 	}
 });
 
-},{"../../../actions/pageActions/channelActions":194,"../../../constants/events":207,"../../../stores/pagesStore":211,"react":193}],204:[function(require,module,exports){
+},{"react":193}],204:[function(require,module,exports){
 var React = require('react');
 
 var Channels = React.createClass({displayName: "Channels",
@@ -32699,7 +32713,8 @@ module.exports = {
 	actionTypes: {
 		ROUTE_NAVIGATE: 'ROUTE_NAVIGATE',
 		CREATE_CHANNEL: 'CREATE_CHANNEL',
-		TRACK_SEARCH: 'TRACK_SEARCH'
+		TRACK_SEARCH: 'TRACK_SEARCH',
+		ADD_TRACK_TO_CHANNEL: 'ADD_TRACK_TO_CHANNEL'
 	}
 };
 
@@ -32710,7 +32725,8 @@ module.exports = {
 	},
 	pages: {
 		channel: {
-			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS'
+			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS',
+			TRACK_ADDED_TO_CHANNEL: 'TRACK_ADDED_TO_CHANNEL'
 		}
 	},
 	server: {
@@ -32788,6 +32804,28 @@ var store = assign(EventEmitter.prototype, {
 						store.emit(Events.server.channel.TRACK_SEARCH_RESPONSE,
 							{
 								tracks: data
+							});
+					})
+					.fail(function (data) {
+						debugger;
+					});
+				break;
+			case Constants.actionTypes.ADD_TRACK_TO_CHANNEL:
+				$.ajax({
+					url: '/api/channel/addtrack/' + action.channelId,
+					method: 'POST',
+					contentType: 'application/json',
+					dataType: 'json',
+					data: JSON.stringify({
+						id: action.track.id,
+						engine: action.track.engine
+					})
+				})
+					.done(function (data) {
+						debugger;
+						store.emit(Events.pages.channel.TRACK_ADDED_TO_CHANNEL,
+							{
+								channelId: data.uid
 							});
 					})
 					.fail(function (data) {

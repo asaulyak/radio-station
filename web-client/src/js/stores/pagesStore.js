@@ -39,6 +39,28 @@ var store = assign(EventEmitter.prototype, {
 						debugger;
 					});
 				break;
+			case Constants.actionTypes.ADD_TRACK_TO_CHANNEL:
+				$.ajax({
+					url: '/api/channel/addtrack/' + action.channelId,
+					method: 'POST',
+					contentType: 'application/json',
+					dataType: 'json',
+					data: JSON.stringify({
+						id: action.track.id,
+						engine: action.track.engine
+					})
+				})
+					.done(function (data) {
+						debugger;
+						store.emit(Events.pages.channel.TRACK_ADDED_TO_CHANNEL,
+							{
+								channelId: data.uid
+							});
+					})
+					.fail(function (data) {
+						debugger;
+					});
+				break;
 		}
 
 		return true;
