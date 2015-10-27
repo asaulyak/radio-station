@@ -22,6 +22,13 @@ var AppActions = {
 			track: data.track,
 			channelId: data.channelId
 		});
+	},
+
+	startChannel: function (data) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.START_CHANNEL,
+			channelId: data.channelId
+		});
 	}
 };
 

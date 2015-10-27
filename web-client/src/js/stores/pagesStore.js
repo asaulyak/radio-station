@@ -51,8 +51,22 @@ var store = assign(EventEmitter.prototype, {
 					})
 				})
 					.done(function (data) {
-						debugger;
 						store.emit(Events.pages.channel.TRACK_ADDED_TO_CHANNEL,
+							{
+								channelId: data.uid
+							});
+					})
+					.fail(function (data) {
+						debugger;
+					});
+				break;
+			case Constants.actionTypes.START_CHANNEL:
+				$.ajax({
+					url: '/api/channel/start/' + action.channelId,
+					method: 'POST'
+				})
+					.done(function (data) {
+						store.emit(Events.pages.channel.CHANNEL_STARTED,
 							{
 								channelId: data.uid
 							});

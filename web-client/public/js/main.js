@@ -32178,12 +32178,19 @@ var AppActions = {
 			track: data.track,
 			channelId: data.channelId
 		});
+	},
+
+	startChannel: function (data) {
+		Dispatcher.dispatch({
+			actionType: Constants.actionTypes.START_CHANNEL,
+			channelId: data.channelId
+		});
 	}
 };
 
 module.exports = AppActions;
 
-},{"../../constants/app-constants":206,"../../dispatchers/app-dispatcher":208}],195:[function(require,module,exports){
+},{"../../constants/app-constants":207,"../../dispatchers/app-dispatcher":209}],195:[function(require,module,exports){
 var AppConstants = require('../constants/app-constants');
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 
@@ -32198,7 +32205,7 @@ var AppActions = {
 
 module.exports = AppActions;
 
-},{"../constants/app-constants":206,"../dispatchers/app-dispatcher":208}],196:[function(require,module,exports){
+},{"../constants/app-constants":207,"../dispatchers/app-dispatcher":209}],196:[function(require,module,exports){
 var React = require('react');
 var Home = require('./pages/home');
 var Channel = require('./pages/channel');
@@ -32233,7 +32240,28 @@ var App = React.createClass({displayName: "App",
 
 module.exports = App;
 
-},{"../actions/routerActions":195,"../dispatchers/app-dispatcher":208,"./layout":197,"./pages/about":201,"./pages/channel":202,"./pages/channels":204,"./pages/home":205,"react":193,"react-router-component":9}],197:[function(require,module,exports){
+},{"../actions/routerActions":195,"../dispatchers/app-dispatcher":209,"./layout":198,"./pages/about":202,"./pages/channel":203,"./pages/channels":205,"./pages/home":206,"react":193,"react-router-component":9}],197:[function(require,module,exports){
+var React = require('react');
+
+var Button = React.createClass({displayName: "Button",
+	render: function () {
+		var buttonClasses = ['ui', 'right', 'floated', 'labeled', 'icon', 'button'];
+
+		this.props.disabled && buttonClasses.push('disabled');
+
+		buttonClasses = buttonClasses.join(' ');
+
+		return (
+			React.createElement("button", {className: buttonClasses, onClick: this.props.onClick}, 
+				React.createElement("i", {className: "right arrow icon"}), 
+				this.props.text
+			)
+		);
+	}
+});
+
+module.exports = Button;
+},{"react":193}],198:[function(require,module,exports){
 var React = require('react');
 var Header = require('./navigation/header');
 
@@ -32250,7 +32278,7 @@ var Template = React.createClass({displayName: "Template",
 
 module.exports = Template;
 
-},{"./navigation/header":198,"react":193}],198:[function(require,module,exports){
+},{"./navigation/header":199,"react":193}],199:[function(require,module,exports){
 var React = require('react');
 var Navigation = require('./navigation');
 
@@ -32266,7 +32294,7 @@ var Header = React.createClass({displayName: "Header",
 
 module.exports = Header;
 
-},{"./navigation":199,"react":193}],199:[function(require,module,exports){
+},{"./navigation":200,"react":193}],200:[function(require,module,exports){
 var React = require('react');
 var Router = require('react-router-component');
 var Link = Router.Link;
@@ -32325,7 +32353,7 @@ var Navigation = React.createClass({displayName: "Navigation",
 
 module.exports = Navigation;
 
-},{"./navigationItem":200,"react":193,"react-router-component":9}],200:[function(require,module,exports){
+},{"./navigationItem":201,"react":193,"react-router-component":9}],201:[function(require,module,exports){
 var React = require('react');
 var Router = require('react-router-component');
 var AppStore = require('../../stores/app-store');
@@ -32375,7 +32403,7 @@ var NavigationItem = React.createClass({displayName: "NavigationItem",
 
 module.exports = NavigationItem;
 
-},{"../../constants/events":207,"../../stores/app-store":210,"react":193,"react-router-component":9}],201:[function(require,module,exports){
+},{"../../constants/events":208,"../../stores/app-store":211,"react":193,"react-router-component":9}],202:[function(require,module,exports){
 var React = require('react');
 
 var About = React.createClass({displayName: "About",
@@ -32392,7 +32420,7 @@ var About = React.createClass({displayName: "About",
 
 module.exports = About;
 
-},{"react":193}],202:[function(require,module,exports){
+},{"react":193}],203:[function(require,module,exports){
 var React = require('react');
 var Steps = require('./steps');
 var Dispatcher = require('../../../dispatchers/app-dispatcher');
@@ -32400,6 +32428,7 @@ var Constants = require('../../../constants/app-constants');
 var Actions = require('../../../actions/pageActions/channelActions');
 var Store = require('../../../stores/pagesStore');
 var Events = require('../../../constants/events');
+var Button = require('../../common/button');
 var $ = require('jquery');
 
 var Channel = React.createClass({displayName: "Channel",
@@ -32407,10 +32436,12 @@ var Channel = React.createClass({displayName: "Channel",
 		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks);
 		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse);
 		Store.on(Events.pages.channel.TRACK_ADDED_TO_CHANNEL, this.onTrackAddedToChannel);
+		Store.on(Events.pages.channel.CHANNEL_STARTED, this.onChannelStarted);
 	},
 
 	componentDidMount: function () {
 		$('#addTracks').hide();
+		$('#startChannel').hide();
 	},
 
 	getInitialState: function () {
@@ -32418,7 +32449,8 @@ var Channel = React.createClass({displayName: "Channel",
 			tracks: [],
 			currentStep: 0,
 			channelId: null,
-			isLoading: false
+			isLoading: false,
+			selectedTracks: []
 		};
 	},
 
@@ -32436,7 +32468,21 @@ var Channel = React.createClass({displayName: "Channel",
 							"Add"
 						)
 					), 
-					React.createElement("i", {className: "large video play middle aligned icon"}), 
+					React.createElement("i", {className: "large unmute aligned icon"}), 
+
+					React.createElement("div", {className: "content"}, 
+						React.createElement("a", {className: "header"}, track.title)
+					)
+				)
+			);
+		});
+	},
+
+	getSelectedTracks: function () {
+		return this.state.selectedTracks.map(function (track, index) {
+			return (
+				React.createElement("div", {className: "item", key: index}, 
+					React.createElement("i", {className: "sound large aligned icon"}), 
 
 					React.createElement("div", {className: "content"}, 
 						React.createElement("a", {className: "header"}, track.title)
@@ -32478,17 +32524,13 @@ var Channel = React.createClass({displayName: "Channel",
 			tracks: data.tracks,
 			isLoading: false
 		});
+
+		$('.result-box').show();
 	},
 
 	onTrackAddedToChannel: function (data) {
 		if (!data.error) {
-			this.setState({
-				//currentStep: 2,
-				//channelId: data.channelId
-			});
-
-			//$('#createChannel').hide();
-			//$('#addTracks').show();
+			this.setState({});
 		}
 	},
 
@@ -32500,7 +32542,9 @@ var Channel = React.createClass({displayName: "Channel",
 			});
 
 			$('#createChannel').hide();
+			$('#startChannel').hide();
 			$('#addTracks').show();
+			$('.result-box').hide();
 		}
 	},
 
@@ -32524,8 +32568,32 @@ var Channel = React.createClass({displayName: "Channel",
 			track: track,
 			channelId: this.state.channelId
 		});
+
+		var selectedTracks = this.state.selectedTracks;
+		selectedTracks.push(track);
+
+		this.setState({
+			selectedTracks: selectedTracks
+		});
 	},
 
+	onDoneButtonClicked: function () {
+		Actions.startChannel({
+			channelId: this.state.channelId
+		});
+	},
+
+	onChannelStarted: function (data) {
+		this.setState({
+			currentStep: 2,
+			channelId: data.channelId
+		});
+
+		$('#createChannel').hide();
+		$('#addTracks').hide();
+		$('#startChannel').show();
+		$('.result-box').hide();
+	},
 
 	render: function () {
 		var searchBoxClassList = 'ui left icon input';
@@ -32538,17 +32606,20 @@ var Channel = React.createClass({displayName: "Channel",
 				React.createElement("div", {id: "createChannel"}, 
 					React.createElement("h1", {className: "ui header"}, "Create new channel"), 
 
-					React.createElement("form", {className: "ui form"}, 
+					React.createElement("div", {className: "ui icon message attached"}, 
+						React.createElement("i", {className: "inbox icon"}), 
+
+						React.createElement("div", {className: "content"}, 
+							React.createElement("div", {className: "header"}, 
+								"Choose a name for your radio channel"
+							), 
+							React.createElement("p", null, "Listeners will see this name in channels list.")
+						)
+					), 
+					React.createElement("form", {className: "ui form attached segment"}, 
 						React.createElement("div", {className: "field"}, 
 							React.createElement("label", null, "Channel Name"), 
-							React.createElement("input", {type: "text", ref: "channelName", name: "first-name", placeholder: "Channel Name"})
-						), 
-
-						React.createElement("div", {className: "field"}, 
-							React.createElement("div", {className: "ui checkbox"}, 
-								React.createElement("input", {type: "checkbox", tabIndex: "0"}), 
-								React.createElement("label", null, "I agree to the Terms and Conditions")
-							)
+							React.createElement("input", {type: "text", ref: "channelName", name: "channel-name", placeholder: "Channel Name"})
 						), 
 						React.createElement("button", {onClick: this.onCreateChannelButtonClick, className: "ui button", type: "button"}, "Create"
 						)
@@ -32557,6 +32628,17 @@ var Channel = React.createClass({displayName: "Channel",
 				React.createElement("div", {id: "addTracks"}, 
 					React.createElement("h1", {className: "ui header"}, "Add tracks to channel"), 
 
+					React.createElement("div", {className: "ui icon message"}, 
+						React.createElement("i", {className: "inbox icon"}), 
+
+						React.createElement("div", {className: "content"}, 
+							React.createElement("div", {className: "header"}, 
+								"Fill your channel"
+							), 
+							React.createElement("p", null, "Search for tracks and add those to your new channel")
+						)
+					), 
+					React.createElement("h4", {className: "ui horizontal divider header"}), 
 					React.createElement("div", {className: "ui search focus"}, 
 						React.createElement("div", {className: searchBoxClassList}, 
 							React.createElement("input", {onKeyPress: this.onSearchChanged, className: "prompt", type: "text", 
@@ -32565,13 +32647,41 @@ var Channel = React.createClass({displayName: "Channel",
 						)
 					), 
 					React.createElement("div", {className: "ui container"}, 
-						React.createElement("div", {className: "attached segment"}, 
-							React.createElement("h4", {className: "ui horizontal divider header"}, 
-								React.createElement("i", {className: "music icon small"})
+						React.createElement("div", {className: "attached segment result-box"}, 
+							React.createElement("h4", {className: "ui medium horizontal divider header"}, 
+								"Channel's track list"
+							), 
+
+							React.createElement("div", {className: "ui large aligned divided list relaxed"}, 
+								this.getSelectedTracks(), 
+								React.createElement(Button, {text: "Start", disabled: !this.state.selectedTracks.length, 
+								        onClick: this.onDoneButtonClicked}), 
+								React.createElement("br", null)
+							), 
+							React.createElement("h4", {className: "ui medium horizontal divider header"}, 
+								"Search results"
 							), 
 
 							React.createElement("div", {className: "ui middle aligned divided list relaxed"}, 
 								this.getTracks()
+							)
+						)
+					)
+				), 
+				React.createElement("div", {id: "startChannel"}, 
+					React.createElement("h1", {className: "ui header"}, "Start your channel"), 
+
+					React.createElement("div", {className: "ui container"}, 
+						React.createElement("h4", {className: "ui horizontal divider header"}), 
+
+						React.createElement("div", {className: "attached segment"}, 
+							React.createElement("div", {className: "ui positive message"}, 
+								React.createElement("div", {className: "header"}, 
+									"Your channel has been started."
+								), 
+								React.createElement("p", null, "Full list of channels can be found ", React.createElement("a", {href: "/channels"}, "here."), 
+									"Start listening to your ", React.createElement("a", {href: '/api/channel/listen/' + this.state.channelId}, 
+										"channel."))
 							)
 						)
 					)
@@ -32584,7 +32694,7 @@ var Channel = React.createClass({displayName: "Channel",
 
 module.exports = Channel;
 
-},{"../../../actions/pageActions/channelActions":194,"../../../constants/app-constants":206,"../../../constants/events":207,"../../../dispatchers/app-dispatcher":208,"../../../stores/pagesStore":211,"./steps":203,"jquery":6,"react":193}],203:[function(require,module,exports){
+},{"../../../actions/pageActions/channelActions":194,"../../../constants/app-constants":207,"../../../constants/events":208,"../../../dispatchers/app-dispatcher":209,"../../../stores/pagesStore":212,"../../common/button":197,"./steps":204,"jquery":6,"react":193}],204:[function(require,module,exports){
 var React = require('react');
 
 module.exports = React.createClass({displayName: "exports",
@@ -32630,7 +32740,7 @@ module.exports = React.createClass({displayName: "exports",
 	}
 });
 
-},{"react":193}],204:[function(require,module,exports){
+},{"react":193}],205:[function(require,module,exports){
 var React = require('react');
 
 var Channels = React.createClass({displayName: "Channels",
@@ -32691,7 +32801,7 @@ var Channels = React.createClass({displayName: "Channels",
 
 module.exports = Channels;
 
-},{"react":193}],205:[function(require,module,exports){
+},{"react":193}],206:[function(require,module,exports){
 var React = require('react');
 
 var Home = React.createClass({displayName: "Home",
@@ -32708,17 +32818,18 @@ var Home = React.createClass({displayName: "Home",
 
 module.exports = Home;
 
-},{"react":193}],206:[function(require,module,exports){
+},{"react":193}],207:[function(require,module,exports){
 module.exports = {
 	actionTypes: {
 		ROUTE_NAVIGATE: 'ROUTE_NAVIGATE',
 		CREATE_CHANNEL: 'CREATE_CHANNEL',
 		TRACK_SEARCH: 'TRACK_SEARCH',
-		ADD_TRACK_TO_CHANNEL: 'ADD_TRACK_TO_CHANNEL'
+		ADD_TRACK_TO_CHANNEL: 'ADD_TRACK_TO_CHANNEL',
+		START_CHANNEL: 'START_CHANNEL'
 	}
 };
 
-},{}],207:[function(require,module,exports){
+},{}],208:[function(require,module,exports){
 module.exports = {
 	routes: {
 		ROUTE_CHANGED: 'ROUTE_CHANGED'
@@ -32726,7 +32837,8 @@ module.exports = {
 	pages: {
 		channel: {
 			CHANNEL_ADD_TRACKS: 'CHANNEL_ADD_TRACKS',
-			TRACK_ADDED_TO_CHANNEL: 'TRACK_ADDED_TO_CHANNEL'
+			TRACK_ADDED_TO_CHANNEL: 'TRACK_ADDED_TO_CHANNEL',
+			CHANNEL_STARTED: 'CHANNEL_STARTED'
 		}
 	},
 	server: {
@@ -32736,18 +32848,18 @@ module.exports = {
 	}
 };
 
-},{}],208:[function(require,module,exports){
+},{}],209:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
 
 module.exports = new Dispatcher();
 
-},{"flux":3}],209:[function(require,module,exports){
+},{"flux":3}],210:[function(require,module,exports){
 var App = require('./components/app');
 var React = require('react');
 
 React.render(React.createElement(App, null), window.document.getElementById('app'));
 
-},{"./components/app":196,"react":193}],210:[function(require,module,exports){
+},{"./components/app":196,"react":193}],211:[function(require,module,exports){
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 var AppConstants = require('../constants/app-constants');
 var Events = require('../constants/events');
@@ -32768,7 +32880,7 @@ var AppStore = assign(EventEmitter.prototype, {
 
 module.exports = AppStore;
 
-},{"../constants/app-constants":206,"../constants/events":207,"../dispatchers/app-dispatcher":208,"events":1,"react/lib/Object.assign":61}],211:[function(require,module,exports){
+},{"../constants/app-constants":207,"../constants/events":208,"../dispatchers/app-dispatcher":209,"events":1,"react/lib/Object.assign":61}],212:[function(require,module,exports){
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 var Events = require('../constants/events');
 var assign = require('react/lib/Object.assign');
@@ -32822,8 +32934,22 @@ var store = assign(EventEmitter.prototype, {
 					})
 				})
 					.done(function (data) {
-						debugger;
 						store.emit(Events.pages.channel.TRACK_ADDED_TO_CHANNEL,
+							{
+								channelId: data.uid
+							});
+					})
+					.fail(function (data) {
+						debugger;
+					});
+				break;
+			case Constants.actionTypes.START_CHANNEL:
+				$.ajax({
+					url: '/api/channel/start/' + action.channelId,
+					method: 'POST'
+				})
+					.done(function (data) {
+						store.emit(Events.pages.channel.CHANNEL_STARTED,
 							{
 								channelId: data.uid
 							});
@@ -32840,4 +32966,4 @@ var store = assign(EventEmitter.prototype, {
 
 module.exports = store;
 
-},{"../constants/app-constants":206,"../constants/events":207,"../dispatchers/app-dispatcher":208,"events":1,"jquery":6,"react/lib/Object.assign":61}]},{},[209]);
+},{"../constants/app-constants":207,"../constants/events":208,"../dispatchers/app-dispatcher":209,"events":1,"jquery":6,"react/lib/Object.assign":61}]},{},[210]);

@@ -5,6 +5,7 @@ var Constants = require('../../../constants/app-constants');
 var Actions = require('../../../actions/pageActions/channelActions');
 var Store = require('../../../stores/pagesStore');
 var Events = require('../../../constants/events');
+var Button = require('../../common/button');
 var $ = require('jquery');
 
 var Channel = React.createClass({
@@ -12,10 +13,12 @@ var Channel = React.createClass({
 		Store.on(Events.pages.channel.CHANNEL_ADD_TRACKS, this.onChannelAddTracks);
 		Store.on(Events.server.channel.TRACK_SEARCH_RESPONSE, this.onTrackSearchResponse);
 		Store.on(Events.pages.channel.TRACK_ADDED_TO_CHANNEL, this.onTrackAddedToChannel);
+		Store.on(Events.pages.channel.CHANNEL_STARTED, this.onChannelStarted);
 	},
 
 	componentDidMount: function () {
 		$('#addTracks').hide();
+		$('#startChannel').hide();
 	},
 
 	getInitialState: function () {
@@ -23,7 +26,8 @@ var Channel = React.createClass({
 			tracks: [],
 			currentStep: 0,
 			channelId: null,
-			isLoading: false
+			isLoading: false,
+			selectedTracks: []
 		};
 	},
 
@@ -41,7 +45,21 @@ var Channel = React.createClass({
 							Add
 						</button>
 					</div>
-					<i className="large video play middle aligned icon"></i>
+					<i className="large unmute aligned icon"></i>
+
+					<div className="content">
+						<a className="header">{track.title}</a>
+					</div>
+				</div>
+			);
+		});
+	},
+
+	getSelectedTracks: function () {
+		return this.state.selectedTracks.map(function (track, index) {
+			return (
+				<div className="item" key={index}>
+					<i className="sound large aligned icon"></i>
 
 					<div className="content">
 						<a className="header">{track.title}</a>
@@ -83,17 +101,13 @@ var Channel = React.createClass({
 			tracks: data.tracks,
 			isLoading: false
 		});
+
+		$('.result-box').show();
 	},
 
 	onTrackAddedToChannel: function (data) {
 		if (!data.error) {
-			this.setState({
-				//currentStep: 2,
-				//channelId: data.channelId
-			});
-
-			//$('#createChannel').hide();
-			//$('#addTracks').show();
+			this.setState({});
 		}
 	},
 
@@ -105,7 +119,9 @@ var Channel = React.createClass({
 			});
 
 			$('#createChannel').hide();
+			$('#startChannel').hide();
 			$('#addTracks').show();
+			$('.result-box').hide();
 		}
 	},
 
@@ -129,8 +145,32 @@ var Channel = React.createClass({
 			track: track,
 			channelId: this.state.channelId
 		});
+
+		var selectedTracks = this.state.selectedTracks;
+		selectedTracks.push(track);
+
+		this.setState({
+			selectedTracks: selectedTracks
+		});
 	},
 
+	onDoneButtonClicked: function () {
+		Actions.startChannel({
+			channelId: this.state.channelId
+		});
+	},
+
+	onChannelStarted: function (data) {
+		this.setState({
+			currentStep: 2,
+			channelId: data.channelId
+		});
+
+		$('#createChannel').hide();
+		$('#addTracks').hide();
+		$('#startChannel').show();
+		$('.result-box').hide();
+	},
 
 	render: function () {
 		var searchBoxClassList = 'ui left icon input';
@@ -143,17 +183,20 @@ var Channel = React.createClass({
 				<div id="createChannel">
 					<h1 className="ui header">Create new channel</h1>
 
-					<form className="ui form">
+					<div className="ui icon message attached">
+						<i className="inbox icon"></i>
+
+						<div className="content">
+							<div className="header">
+								Choose a name for your radio channel
+							</div>
+							<p>Listeners will see this name in channels list.</p>
+						</div>
+					</div>
+					<form className="ui form attached segment">
 						<div className="field">
 							<label>Channel Name</label>
-							<input type="text" ref="channelName" name="first-name" placeholder="Channel Name"/>
-						</div>
-
-						<div className="field">
-							<div className="ui checkbox">
-								<input type="checkbox" tabIndex="0"/>
-								<label>I agree to the Terms and Conditions</label>
-							</div>
+							<input type="text" ref="channelName" name="channel-name" placeholder="Channel Name"/>
 						</div>
 						<button onClick={this.onCreateChannelButtonClick} className="ui button" type="button">Create
 						</button>
@@ -162,6 +205,17 @@ var Channel = React.createClass({
 				<div id="addTracks">
 					<h1 className="ui header">Add tracks to channel</h1>
 
+					<div className="ui icon message">
+						<i className="inbox icon"></i>
+
+						<div className="content">
+							<div className="header">
+								Fill your channel
+							</div>
+							<p>Search for tracks and add those to your new channel</p>
+						</div>
+					</div>
+					<h4 className="ui horizontal divider header"></h4>
 					<div className="ui search focus">
 						<div className={searchBoxClassList}>
 							<input onKeyPress={this.onSearchChanged} className="prompt" type="text"
@@ -170,13 +224,41 @@ var Channel = React.createClass({
 						</div>
 					</div>
 					<div className="ui container">
-						<div className="attached segment">
-							<h4 className="ui horizontal divider header">
-								<i className="music icon small"></i>
+						<div className="attached segment result-box">
+							<h4 className="ui medium horizontal divider header">
+								Channel's track list
+							</h4>
+
+							<div className="ui large aligned divided list relaxed">
+								{this.getSelectedTracks()}
+								<Button text="Start" disabled={!this.state.selectedTracks.length}
+								        onClick={this.onDoneButtonClicked}/>
+								<br/>
+							</div>
+							<h4 className="ui medium horizontal divider header">
+								Search results
 							</h4>
 
 							<div className="ui middle aligned divided list relaxed">
 								{this.getTracks()}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="startChannel">
+					<h1 className="ui header">Start your channel</h1>
+
+					<div className="ui container">
+						<h4 className="ui horizontal divider header"></h4>
+
+						<div className="attached segment">
+							<div className="ui positive message">
+								<div className="header">
+									Your channel has been started.
+								</div>
+								<p>Full list of channels can be found <a href="/channels">here.</a>
+									Start listening to your <a href={'/api/channel/listen/' + this.state.channelId}>
+										channel.</a></p>
 							</div>
 						</div>
 					</div>
